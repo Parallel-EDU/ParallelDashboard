@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #f1f1f1;
+}
+input::placeholder {
+  color: #000;
+}
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  outline: 2px solid #000;
+}
+.mixblend {
+  mix-blend-mode: color-dodge;
+}
+.radical-circle {
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    #1bd44f 0%,
+    rgba(2, 123, 254, 0.4) 100%
+  );
+  position: absolute;
+  z-index: -1;
+  width: 1840.27px;
+  height: 1840.27px;
+  top: -440.63px;
+  left: 324.34px;
+  gap: 0px;
+  opacity: 0.4;
+}
+input[type="radio"]:checked {
+  background-color: black;
+  border: 3px solid white;
+}
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 2px;
+  border: 2px solid #000;
+}
+input::placeholder{
+  color: #00000099;
+}
+input[type="checkbox"]:checked {
+  background-color: black;
+}
+
+input[type="checkbox"]::before {
+  content: "\2713";
+  display: block;
+  text-align: center;
+  line-height: 13px;
+  font-weight: bold;
+  color: white;
+  font-size: 10px;
+}
+* {
+  margin: 0;
+  padding: 0;
+  scrollbar-width: none;
+  box-sizing: border-box;
+  scroll-behavior: auto;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+body {
+  font-family: Graphik;
+  color: black;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+@font-face {
+  font-family: Graphik;
+  src: url("../public/GraphikRegular.woff2");
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: black;
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+input {
+  outline: none;
+}
