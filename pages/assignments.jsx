@@ -3,72 +3,74 @@ import Image from "next/image";
 import Link from "next/link";
 import style from "../styles/style.module.css";
 import { useEffect, useState } from "react";
-import axios from 'axios'
+import axios from "axios";
 
 export default function Learn() {
   const [remark, setRemark] = useState(false);
   const [assignment, setAssignment] = useState(false);
   const [assignmentData, setAssignmentData] = useState(false);
-  const [assignmentLink, setAssignmentLink] = useState('');
+  const [assignmentLink, setAssignmentLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [Date, setDate] = useState('Select date');
+  const [Date, setDate] = useState("Select date");
   const handleSubmit = async () => {
     if (!assignmentLink) {
-      alert('Please paste a link before submitting.');
+      alert("Please paste a link before submitting.");
       return;
-    }}
-    setIsSubmitting(true);
-  
-    const fetchAssignments = async () => {
-      try {
-        const response = await axios.get('/api/platform/assignments/route');
-        setAssignmentData(response.data.data);
-        console.log("Fetched assignments:", response.data.data);
-      } catch (error) {
-        console.error('Error fetching assignments:', error);
-      }
-    };
-    useEffect(() => {
-      fetchAssignments();
-    }, []);
+    }
+  };
+  setIsSubmitting(true);
 
-    
+  const fetchAssignments = async () => {
+    try {
+      const response = await axios.get("/api/platform/assignments/route");
+      setAssignmentData(response.data.data);
+      console.log("Fetched assignments:", response.data.data);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
 
-    const fetchSubmitAssignment = async () => {
-      try {
-        const response = await axios.post('/api/platform/assignments/submitAssignment');
-        setAssignmentData(response.data.data);
-        console.log("Submitted assignment:", response.data.data);
-      } catch (error) {
-        console.error('Error submitting assignment:', error);
-      }
-    };
+  const fetchSubmitAssignment = async () => {
+    try {
+      const response = await axios.post(
+        "/api/platform/assignments/submitAssignment"
+      );
+      setAssignmentData(response.data.data);
+      console.log("Submitted assignment:", response.data.data);
+    } catch (error) {
+      console.error("Error submitting assignment:", error);
+    }
+  };
 
-    useEffect(() => {
-      fetchSubmitAssignment();
-    },[])
+  useEffect(() => {
+    fetchSubmitAssignment();
+  }, []);
 
   return (
     <>
       <Navbar />
       <main className="pt-[63.51px] px-[60px] max-sm:px-[20px] max-md:px-[40px] pb-[85px]">
         <div className="w-full pt-[25.52px] pl-[29.45px] max-md:p-[20px] pb-[52.49px] rounded-[6px] bg-white">
-        {assignmentData.length > 0 ? (
-        assignmentData.map((assignment, index) => (
-        <div key={index}>
-          <p className="p-[8px] bg-[#0C6926] rounded-[24px] inline text-[14px] text-white leading-[18.2px]">
-            New Assignment
-          </p>
-          <h1 className="font-semibold mt-[28.72px] text-[20px] leading-[26px]">
-            {assignment.title}
-          </h1>
-          <p className="mt-[20.14px] max-sm:w-full w-[587px]">
-            {assignment.description}
-          </p>
-          </div>
-      ))) : (
-        <p>No assignments found</p>
-      )}
+          {assignmentData.length > 0 ? (
+            assignmentData.map((assignment, index) => (
+              <div key={index}>
+                <p className="p-[8px] bg-[#0C6926] rounded-[24px] inline text-[14px] text-white leading-[18.2px]">
+                  New Assignment
+                </p>
+                <h1 className="font-semibold mt-[28.72px] text-[20px] leading-[26px]">
+                  {assignment.title}
+                </h1>
+                <p className="mt-[20.14px] max-sm:w-full w-[587px]">
+                  {assignment.description}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No assignments found</p>
+          )}
           <button className="py-[10px] px-[24px] border-[1px] border-black rounded-[6px] text-base font-semibold mt-[28.72px] mb-[33.75px]">
             View Resources
           </button>
@@ -85,14 +87,13 @@ export default function Learn() {
                 id=""
               />
             </div>
-            <button  className="bg-[#30E29D] max-sm:w-full mt-[37.46px] py-[10px] px-[24px] rounded-[6px] text-base font-semibold h-[43.07px]">
+            <button className="bg-[#30E29D] max-sm:w-full mt-[37.46px] py-[10px] px-[24px] rounded-[6px] text-base font-semibold h-[43.07px]">
               Submit Assignment
             </button>
           </div>
         </div>
 
-
-         <div className="mt-[54.99px]">
+        <div className="mt-[54.99px]">
           <h1 className="font-semibold text-[20px] leading-[26px] mb-[19px]">
             Previous assignments
           </h1>
@@ -101,19 +102,22 @@ export default function Learn() {
               htmlFor="calender"
               className="h-[48px] flex items-center relative justify-between border-[#0000004D] border-[1px] py-[12px] px-[14.28px] w-[244px] rounded-[6px]"
             >
-            <input
-              type="date"
-              onChange={(e) => setDate(e.target.value)}
-              name="calender"
-              className="h-[48px] pl right-0 absolute pl-[80px] opacity-0 flex items-center justify-between border-[#0000004D] border-[1px] py-[12px] pr-[14.28px] rounded-[6px]"
-              id="calender"
-            />
+              <input
+                type="date"
+                onChange={(e) => setDate(e.target.value)}
+                name="calender"
+                className="h-[48px] pl right-0 absolute pl-[80px] opacity-0 flex items-center justify-between border-[#0000004D] border-[1px] py-[12px] pr-[14.28px] rounded-[6px]"
+                id="calender"
+              />
               <p className="text-[14px]">{Date}</p>
               <Image src="/calender.svg" width={24} height={24} />
             </label>
             <div className="flex items-center gap-[4px]">
               <input type="checkbox" name="unsubmitted" id="unsubmitted" />
-              <label htmlFor="unsubmitted" className="text-[14px] max-[350px]:text-[12px]">
+              <label
+                htmlFor="unsubmitted"
+                className="text-[14px] max-[350px]:text-[12px]"
+              >
                 Show only unsubmitted assignments
               </label>
             </div>
@@ -541,7 +545,7 @@ export default function Learn() {
             </div>
           </div>
         </div>
-       <div className="relative h-[32px] mt-[61px]">
+        <div className="relative h-[32px] mt-[61px]">
           <div className="flex gap-[16px] absolute right-[0px]">
             <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
               <Image src="/Group 4.svg" width={14.13} height={14.13} />

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function Navbar() {
   const [openHamburger, setOpenHamburger] = useState(false);
@@ -15,6 +16,7 @@ export default function Navbar() {
   const Menuitems4 = useRef(null);
   const Menuitems5 = useRef(null);
   const Menuitems6 = useRef(null);
+  const router = useRouter();
   const Cross = useRef(null);
   const Background = useRef(null);
   const handleHamburger = () => {
@@ -138,28 +140,36 @@ export default function Navbar() {
             <Link
               href={"/class"}
               ref={Menuitems1}
-              className="text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]"
+              className={`${
+                router.pathname === "/class" ? "underline font-bold" : ""
+              } text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]`}
             >
               Class
             </Link>
             <Link
               href={"/assignments"}
               ref={Menuitems2}
-              className="text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]"
+              className={`${
+                router.pathname === "/assignments" ? "underline font-bold" : ""
+              } text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]`}
             >
               Assignments
             </Link>
             <Link
               href={"/support"}
               ref={Menuitems3}
-              className="text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]"
+              className={`${
+                router.pathname === "/support" ? "underline font-bold" : ""
+              } text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]`}
             >
               Support
             </Link>
             <Link
               href={"/jobs"}
               ref={Menuitems4}
-              className="text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]"
+              className={`${
+                router.pathname === "/jobs" ? "underline font-bold" : ""
+              } text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]`}
             >
               Jobs
             </Link>
@@ -181,7 +191,9 @@ export default function Navbar() {
               />
               <Link
                 href={"/profile"}
-                className="text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]"
+                className={`${
+                  router.pathname === "/profile" ? "underline font-bold" : ""
+                } text-[16px] max-hamburger:text-right max-hamburger:text-2xl leading-[19.2px] py-[2.5px]`}
               >
                 My Account
               </Link>

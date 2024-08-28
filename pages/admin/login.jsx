@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useState } from "react";
 import style from "../../styles/style.module.css";
 // import { sendOTP } from './api/sendOTP';

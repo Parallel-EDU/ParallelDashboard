@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import gsap from "gsap";
 import { useRef, useState, useEffect } from "react";
 
 export default function TrainerNavbar() {
+  const router = useRouter();
+
   return (
     <>
       <nav className="px-[60px] sticky top-0 z-[99999] relative max-md:px-[40px] max-sm:px-[20px] flex justify-between pt-[40px] pb-[20px] bg-white border-b-[0.5px] border-[#00000033]">
@@ -23,31 +26,31 @@ export default function TrainerNavbar() {
       <div className="h-[59px] sticky top-[85px] z-[9999] shadow-lg gap-[32px] flex mb-[28px] items-center px-[60px] max-md:px-[40px] max-sm:px-[20px] max-hamburger:gap-[16px] max-hamburger:overflow-scroll bg-[white]">
         <Link
           href={"/trainer/batches"}
-          className="text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap"
+          className={`${router.pathname === '/trainer/batches' ? 'underline font-bold' : ''}text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap`}
         >
           My batches
         </Link>
         <Link
           href={"/trainer/assignments"}
-          className="text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap"
+          className={`${router.pathname === '/trainer/assignments' ? 'underline font-bold' : ''}text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap`}
         >
           Assignments
         </Link>
         <Link
           href={"/trainer/announcements"}
-          className="text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap"
+          className={`${router.pathname === '/trainer/announcements' ? 'underline font-bold' : ''}text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap`}
         >
           Send announcement{" "}
         </Link>
         <Link
           href={"/trainer/progress"}
-          className="text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap"
+          className={`${router.pathname === '/trainer/progress' ? 'underline font-bold' : ''}text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap`}
         >
           Progress
         </Link>
         <Link
           href={"/trainer/schedule"}
-          className="text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap"
+          className={`${router.pathname === '/trainer/schedule' ? 'underline font-bold' : ''}text-[16px] cursor-pointer leading-[19.2px] pl-[0.5px] max-hamburger:pl-0 max-md:text-[14px] max-md:leading-[16.8px] max-sm:text-[12px] max-sm:leading-[14.4px] max-hamburger:whitespace-nowrap`}
         >
           Schedule
         </Link>
