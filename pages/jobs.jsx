@@ -15,7 +15,7 @@ export default function Jobs() {
   return (
     <>
       <Navbar />
-      {/* <div
+      <div
         style={{ backdropFilter: "blur(17px)" }}
         className="w-full h-full fixed top-0 max-[500px]:text-center flex flex-col items-center justify-center left-0 bg-[#FFFFFF0D] z-50"
       >
@@ -25,7 +25,7 @@ export default function Jobs() {
             Back to classes
           </button>
         </Link>
-      </div> */}
+      </div>
       <section className="px-[60px] max-hamburger:px-[60px] max-md:px-[40px] max-sm:px-[20px] pb-[65px] pt-[51.08px]">
         <h1 className="text-[20px] leading-[26px] font-semibold mb-[28.92px]">
           Job Opportunities

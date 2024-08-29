@@ -8,7 +8,8 @@ import axios from "axios";
 export default function Learn() {
   const [remark, setRemark] = useState(false);
   const [assignment, setAssignment] = useState(false);
-  const [assignmentData, setAssignmentData] = useState(false);
+  const [assignmentData, setAssignmentData] = useState('');
+  const [Completed, setCompleted] = useState('');
   const [assignmentLink, setAssignmentLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [Date, setDate] = useState("Select date");
@@ -18,11 +19,11 @@ export default function Learn() {
       return;
     }
   };
-  setIsSubmitting(true);
 
   const fetchAssignments = async () => {
     try {
       const response = await axios.get("/api/platform/assignments/route");
+      setIsSubmitting(true);
       setAssignmentData(response.data.data);
       console.log("Fetched assignments:", response.data.data);
     } catch (error) {
@@ -38,8 +39,8 @@ export default function Learn() {
       const response = await axios.post(
         "/api/platform/assignments/submitAssignment"
       );
-      setAssignmentData(response.data.data);
-      console.log("Submitted assignment:", response.data.data);
+      setCompleted(response.data.data);
+      console.log("Completed assignment:", Completed);
     } catch (error) {
       console.error("Error submitting assignment:", error);
     }
@@ -53,9 +54,9 @@ export default function Learn() {
     <>
       <Navbar />
       <main className="pt-[63.51px] px-[60px] max-sm:px-[20px] max-md:px-[40px] pb-[85px]">
-        <div className="w-full pt-[25.52px] pl-[29.45px] max-md:p-[20px] pb-[52.49px] rounded-[6px] bg-white">
-          {assignmentData.length > 0 ? (
-            assignmentData.map((assignment, index) => (
+        {assignmentData.length > 0 ? (
+          assignmentData.map((assignment, index) => (
+            <div className="w-full pt-[25.52px] mb-[20px] pl-[29.45px] max-md:p-[20px] pb-[52.49px] rounded-[6px] bg-white">
               <div key={index}>
                 <p className="p-[8px] bg-[#0C6926] rounded-[24px] inline text-[14px] text-white leading-[18.2px]">
                   New Assignment
@@ -67,33 +68,33 @@ export default function Learn() {
                   {assignment.description}
                 </p>
               </div>
-            ))
-          ) : (
-            <p>No assignments found</p>
-          )}
-          <button className="py-[10px] px-[24px] border-[1px] border-black rounded-[6px] text-base font-semibold mt-[28.72px] mb-[33.75px]">
-            View Resources
-          </button>
-          <div className="pt-[33.74px] max-md:flex-col flex gap-[25.55px] border-t-[1px] border-[#00000033]">
-            <div>
-              <p className="text-[#2C2E32] mb-[10px] text-[14px]">
-                Paste link to submit assignment
-              </p>
-              <input
-                type="text"
-                className="border-[0.5px] rounded-[4px] py-[18.5px] px-[16.27px] w-[309px] max-sm:w-full italic text-[14px] border-[#00000080]"
-                placeholder="Click to paste link"
-                name=""
-                id=""
-              />
+              <button className="py-[10px] px-[24px] border-[1px] border-black rounded-[6px] text-base font-semibold mt-[28.72px] mb-[33.75px]">
+                View Resources
+              </button>
+              <div className="pt-[33.74px] max-md:flex-col flex gap-[25.55px] border-t-[1px] border-[#00000033]">
+                <div>
+                  <p className="text-[#2C2E32] mb-[10px] text-[14px]">
+                    Paste link to submit assignment
+                  </p>
+                  <input
+                    type="text"
+                    className="border-[0.5px] rounded-[4px] py-[18.5px] px-[16.27px] w-[309px] max-sm:w-full italic text-[14px] border-[#00000080]"
+                    placeholder="Click to paste link"
+                    name=""
+                    id=""
+                  />
+                </div>
+                <button className="bg-[#30E29D] max-sm:w-full mt-[37.46px] py-[10px] px-[24px] rounded-[6px] text-base font-semibold h-[43.07px]">
+                  Submit Assignment
+                </button>
+              </div>
             </div>
-            <button className="bg-[#30E29D] max-sm:w-full mt-[37.46px] py-[10px] px-[24px] rounded-[6px] text-base font-semibold h-[43.07px]">
-              Submit Assignment
-            </button>
-          </div>
-        </div>
+          ))
+        ) : (
+          <p>No assignments found</p>
+        )}
 
-        <div className="mt-[54.99px]">
+        <div className="mt-[34.99px]">
           <h1 className="font-semibold text-[20px] leading-[26px] mb-[19px]">
             Previous assignments
           </h1>

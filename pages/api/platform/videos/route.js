@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk';
-import Video from '../../models/Video';
+// import Video from '../../models/Video';
 import dbConnect from '../../lib/dbConnect';
 
 const s3 = new AWS.S3({

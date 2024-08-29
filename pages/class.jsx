@@ -73,14 +73,14 @@ export default function Dashboard() {
       }
     };
     const fetchVideos = async () => {
-      try {
-        const response = await axios.get('/api/platform/videos/route');
-        setVideos(response.data.data);
-        console.log(videos);
-        console.log("response videos", response.data.data);
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
+      // try {
+      //   const response = await axios.get('/api/platform/videos/route');
+      //   setVideos(response.data.data);
+      //   console.log(videos);
+      //   console.log("response videos", response.data.data);
+      // } catch (error) {
+      //   console.error('Error fetching videos:', error);
+      // }
     };
     fetchAssignments();
     fetchGuestSession();
