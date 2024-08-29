@@ -188,9 +188,9 @@ export default function Profile() {
             <h1 className="capitalize text-[20px] leading-[26px] font-semibold">
               Job preferences{" "}
             </h1>
-            <div className="border-[1px] max-sm:hidden w-[206px] h-[41px] text-[14px] border-black py-[12px] px-[19px] rounded-[4px] cursor-pointer">
+            <Link href={'/placement-profile'} className="border-[1px] max-sm:hidden w-[206px] h-[41px] text-[14px] border-black py-[12px] px-[19px] rounded-[4px] cursor-pointer">
               Update Placement Profile
-            </div>
+            </Link>
           </div>
           <div className="w-[673px] max-md:w-full">
             <p className="text-[14px] leading-[15.4px] mb-[10px]">Resume </p>

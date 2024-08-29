@@ -45,9 +45,9 @@ export default function Profile() {
             <h1 className="capitalize text-[20px] leading-[26px] font-bold">
               Placement Profile{" "}
             </h1>
-            <p className="text-[16px] leading-[24px] font-semibold h-[20px] border-b-[1.23px] border-black">
+            <Link href={'/profile'} className="text-[16px] leading-[24px] font-semibold h-[20px] border-b-[1.23px] border-black">
               Go back
-            </p>
+            </Link>
           </div>
           <div className="w-[874px] max-hamburger:w-full max-sm:px-[20px] max-hamburger:w-full py-[24px] pl-[25px] max-hamburger:px-[25px] bg-white rounded-[5px]">
             <div className="flex gap-[18px] max-sm:flex-col max-sm:gap-[17px] mb-[17px]">

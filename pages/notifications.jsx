@@ -5,8 +5,8 @@ import axios from "axios";
 
 function Notifications() {
   const [notifications, setNotifications] = useState([]);
-  const [selectedNotification, setSelectedNotification] = useState(true);
-  const [notification, setNotification] = useState(true);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [noNotification, setnoNotification] = useState(false);
   const scrollRef = useRef(null);
 
   const formatTime = (time) => {
@@ -17,105 +17,111 @@ function Notifications() {
       hour12: true,
     });
   };
+  function formatCustomDate(dateString) {
+    const date = new Date(dateString);
+    const day = date.getDate();
 
-  // Fetch notifications from the API
+    const getDaySuffix = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+
+    const dayWithSuffix = day + getDaySuffix(day);
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const month = monthNames[date.getMonth()];
+
+    const year = date.getFullYear();
+
+    return `${dayWithSuffix} ${month} ${year}`;
+  }
+  const groupNotificationsByDate = () => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const todayGroup = [];
+    const yesterdayGroup = [];
+    const olderGroup = [];
+
+    notifications.forEach((notif) => {
+      const notifDate = new Date(notif.time);
+      if (notifDate.toDateString() === today.toDateString()) {
+        todayGroup.push(notif);
+      } else if (notifDate.toDateString() === yesterday.toDateString()) {
+        yesterdayGroup.push(notif);
+      } else {
+        olderGroup.push(notif);
+      }
+    });
+
+    return { todayGroup, yesterdayGroup, olderGroup };
+  };
+
   useEffect(() => {
     async function fetchNotifications() {
       try {
-        const response = await axios.get('/api/platform/notifications/route'); // Replace with your API endpoint
-        setNotifications(response.data.data);
+        const response = await axios.get("/api/platform/notifications/route");
+        if (response.data.data.length > 0) {
+          setNotifications(response.data.data);
+        } else {
+          setnoNotification(true);
+        }
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        console.error("Error fetching notifications:", error);
+        setnoNotification(true); // Handle error by showing no notifications
       }
     }
-
     fetchNotifications();
   }, []);
 
   const handleNotificationClick = (notif) => {
     setSelectedNotification(notif);
-    setNotification(true);
   };
+
+  const { todayGroup, yesterdayGroup, olderGroup } = groupNotificationsByDate();
 
   return (
     <>
       <Navbar />
       <section className="pt-[51.08px] max-sm:py-[30px] max-md:px-[40px] max-sm:px-[20px] px-[60px] pb-[123px]">
-        {!notification && (
-          <>
+        {noNotification ? (
+          <section>
             <h1 className="text-[20px] leading-[26px] font-semibold mb-[28.92px]">
               Notifications
             </h1>
-            <div className="w-full max-md:w-full h-[567px] rounded-[5px] bg-[white] pt-[0px] pl-[37px] max-sm:px-[20px] pr-[61px]">
-              <div
-                ref={scrollRef}
-                className="h-[505px] max-sm:w-full overflow-y-scroll w-full mt-[31px]"
-              >
-                {notifications.map((notif, index) => (
-                  <div className="mt-[37px]" key={index}>
-                    <h1 className="text-[16px] leading-[20.8px] pb-[16px] border-b-[1px]">
-                      {notif.date}
-                    </h1>
-                    <div
-                      onClick={() => handleNotificationClick(notif)}
-                      className="py-[10px] max-hamburger:flex-col max-hamburger:items-start max-hamburger:gap-[12px] max-hamburger:h-auto flex items-center pr-[15px] justify-between h-[82px] w-full max-xl:w-full border-b-[1px] border-[#C4C4C4]"
-                    >
-                      <div className="flex max-hamburger:flex-col max-hamburger:items-start gap-[24px] items-center">
-                        <div className="w-[645.83px] max-[450px]:flex-col max-[450px]:items-start max-[450px]:gap-[12px] max-xl:w-[500px] max-hamburger:w-full max-md:whitespace-normal max-xl:truncate flex gap-[37px] items-center">
-                          <div className=" h-[34px] text-[14px] leading-[18.2px] text-white rounded-[24px] bg-[#0C6926] p-[8px]">
-                            New
-                          </div>
-                          <h1 className="capitalize text-[20px] leading-[26px] max-md:whitespace-normal max-xl:truncate">
-                            {notif.title}
-                          </h1>
-                        </div>
-                        <p className="text-[14px] leading-[18.2px] opacity-60">
-                          {formatTime(notif.time)}
-                        </p>
-                      </div>
-                      <div
-                        onClick={() => setNotification(true)}
-                        className="border-[1px] max-[450px]:w-full max-[450px]:text-center w-[131px] h-[29px] text-[14px] border-black py-[5px] px-[10px] rounded-[4px] cursor-pointer opacity-1"
-                      >
-                        Join with Meet
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>{" "}
-            <div className="flex gap-[16px] absolute right-[60px] max-sm:right-[20px] mt-[20px]">
-              <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                <Image src="/Group 4.svg" width={14.13} height={14.13} />
-              </div>
-              <div className="flex gap-[8px]">
-                <p className="w-[32px] text-[17.23px] cursor-pointer bg-[#31E39E] leading-[16px] h-[32px] flex justify-center items-center text-black border-[#000]">
-                  1
-                </p>
-                <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  2
-                </p>
-                <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  3
-                </p>
-                <p className="w-[25px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer"></p>
-                <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  42
-                </p>
-              </div>
-              <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                <Image src="/Group 4.svg" width={14.13} height={14.13} />
-              </div>
+            <div className="w-full max-md:w-full py-[32px] rounded-[5px] bg-[white] px-[20px]">
+              <p className="text-left">No Notifications For Now</p>
             </div>
-          </>
-        )}
-
-        {notification && selectedNotification && (
+          </section>
+        ) : selectedNotification ? (
           <>
             <Image
               src="back.svg"
               className="mb-[28.02px] cursor-pointer"
-              onClick={() => setNotification(false)}
+              onClick={() => setSelectedNotification(null)}
               width={44.97}
               height={44.97}
             />
@@ -128,7 +134,7 @@ function Notifications() {
                   {formatTime(selectedNotification.time)}
                 </p>
                 <p className="text-[14px] leading-[18.2px] opacity-60">
-                  12th April 2024
+                  {formatCustomDate(selectedNotification.time)}
                 </p>
               </div>
               <p className="text-base max-hamburger:mb-[20px] max-lg:w-full mb-[42px] w-[808px]">
@@ -138,7 +144,7 @@ function Notifications() {
                 Join in zoom
               </button>
               <span
-                onClick={() => setNotification(false)}
+                onClick={() => setSelectedNotification(null)}
                 className="hidden max-md:block"
               >
                 <Image
@@ -150,9 +156,104 @@ function Notifications() {
               </span>
             </div>
           </>
+        ) : (
+          <>
+            <h1 className="text-[20px] leading-[26px] font-semibold mb-[28.92px]">
+              Notifications
+            </h1>
+            <div className="w-full h-[567px] rounded-[5px] bg-[white] pt-[0px] pl-[37px] pr-[61px]">
+              <div
+                ref={scrollRef}
+                className="h-[505px] overflow-y-scroll w-full mt-[31px]"
+              >
+                <div className="mt-[37px]">
+                  {todayGroup.length > 0 && (
+                    <>
+                      <h2 className="text-[18px] font-semibold mb-[10px]">
+                        Today
+                      </h2>
+                      {todayGroup.map((notif) => (
+                        <NotificationItem
+                          key={notif.id}
+                          notif={notif}
+                          onClick={handleNotificationClick}
+                          formatTime={formatTime}
+                          status={true}
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
+                <div className="mt-[37px]">
+                  {yesterdayGroup.length > 0 && (
+                    <>
+                      <h2 className="text-[18px] font-semibold mt-[20px] mb-[10px]">
+                        Yesterday
+                      </h2>
+                      {yesterdayGroup.map((notif) => (
+                        <NotificationItem
+                          key={notif.id}
+                          notif={notif}
+                          onClick={handleNotificationClick}
+                          formatTime={formatTime}
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
+                <div className="mt-[37px]">
+                  {olderGroup.length > 0 && (
+                    <>
+                      <h2 className="text-[18px] font-semibold mt-[20px] mb-[10px]">
+                        Earlier
+                      </h2>
+                      {olderGroup.map((notif) => (
+                        <NotificationItem
+                          key={notif.id}
+                          notif={notif}
+                          onClick={handleNotificationClick}
+                          formatTime={formatTime}
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </section>
     </>
+  );
+}
+
+function NotificationItem({ notif, onClick, formatTime, status }) {
+  return (
+    <div className="cursor-pointer" onClick={() => onClick(notif)}>
+      <h1 className="text-[16px] leading-[20.8px] pb-[16px]">{notif.date}</h1>
+      <div className="py-[10px] max-hamburger:flex-col max-hamburger:items-start max-hamburger:gap-[12px] max-hamburger:h-auto flex items-center pr-[15px] justify-between h-[82px] w-full max-xl:w-full border-b-[1px] border-[#C4C4C4]">
+        <div className="flex max-hamburger:flex-col max-hamburger:items-start gap-[24px] items-center">
+          <div className="w-[645.83px] max-[450px]:flex-col max-[450px]:items-start max-[450px]:gap-[12px] max-xl:w-[500px] max-hamburger:w-full max-md:whitespace-normal max-xl:truncate flex gap-[37px] items-center">
+            <div
+              className={`${
+                status ? "" : "opacity-0"
+              } h-[34px] text-[14px] leading-[18.2px] text-white rounded-[24px] bg-[#0C6926] p-[8px]`}
+            >
+              New
+            </div>
+            <h1 className="capitalize text-[20px] leading-[26px] max-md:whitespace-normal max-xl:truncate">
+              {notif.title}
+            </h1>
+          </div>
+          <p className="text-[14px] leading-[18.2px] opacity-60">
+            {formatTime(notif.time)}
+          </p>
+        </div>
+        {/* <div className="border-[1px] max-[450px]:w-full max-[450px]:text-center w-[131px] h-[29px] text-[14px] border-black py-[5px] px-[10px] rounded-[4px] cursor-pointer opacity-1">
+                        Join with Meet
+                      </div> */}
+      </div>
+    </div>
   );
 }
 

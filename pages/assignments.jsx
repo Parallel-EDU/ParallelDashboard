@@ -8,8 +8,8 @@ import axios from "axios";
 export default function Learn() {
   const [remark, setRemark] = useState(false);
   const [assignment, setAssignment] = useState(false);
-  const [assignmentData, setAssignmentData] = useState('');
-  const [Completed, setCompleted] = useState('');
+  const [assignmentData, setAssignmentData] = useState("");
+  const [Completed, setCompleted] = useState("");
   const [assignmentLink, setAssignmentLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [Date, setDate] = useState("Select date");
@@ -23,9 +23,22 @@ export default function Learn() {
   const fetchAssignments = async () => {
     try {
       const response = await axios.get("/api/platform/assignments/route");
-      setIsSubmitting(true);
-      setAssignmentData(response.data.data);
-      console.log("Fetched assignments:", response.data.data);
+      const data = response.data.data;
+
+      const completedAssignments = [];
+      const ongoingAssignments = [];
+
+      data.forEach((assignment) => {
+        console.log(assignment.status);
+        if (assignment.status === "submitted") {
+          completedAssignments.push(assignment);
+        } else {
+          ongoingAssignments.push(assignment);
+        }
+      });
+
+      setCompleted(completedAssignments);
+      setAssignmentData(ongoingAssignments);
     } catch (error) {
       console.error("Error fetching assignments:", error);
     }
@@ -34,21 +47,21 @@ export default function Learn() {
     fetchAssignments();
   }, []);
 
-  const fetchSubmitAssignment = async () => {
-    try {
-      const response = await axios.post(
-        "/api/platform/assignments/submitAssignment"
-      );
-      setCompleted(response.data.data);
-      console.log("Completed assignment:", Completed);
-    } catch (error) {
-      console.error("Error submitting assignment:", error);
-    }
-  };
+  // const fetchSubmitAssignment = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       "/api/platform/assignments/submitAssignment"
+  //     );
+  //     setCompleted(response);
+  //     console.log("Completed assignment:", Completed);
+  //   } catch (error) {
+  //     console.error("Error submitting assignment:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchSubmitAssignment();
-  }, []);
+  // useEffect(() => {
+  //   fetchSubmitAssignment();
+  // }, []);
 
   return (
     <>
@@ -91,7 +104,9 @@ export default function Learn() {
             </div>
           ))
         ) : (
-          <p>No assignments found</p>
+          <div className="w-full py-[25.52px] mb-[20px] pl-[29.45px] rounded-[6px] bg-white">
+            <p>No New Assignments</p>
+          </div>
         )}
 
         <div className="mt-[34.99px]">
@@ -145,431 +160,49 @@ export default function Learn() {
               Grade assignment
             </p>
           </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
+          {Completed.length > 0 &&
+            Completed.map((assignment, index) => (
+              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
+                <div className="flex items-center">
+                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
+                    02/20/2024
+                  </p>
+                  <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
+                    {assignment.topic}
+                  </p>
+                  <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
+                  {assignment.title}
+                  </p>
+                  <p className="text-[14px] leading-[16.8px] mr-[52px]">
+                  {assignment.dateAssign}
+                  </p>
+                  <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
+                  {assignment.dateSubmitted}
+                    <button
+                      onClick={() => setAssignment(true)}
+                      className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
+                    >
+                      View Assignment
+                    </button>
+                  </p>
+                  <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
+                    <div className="flex gap-[4.76px]">
+                      <Image src="/yellow.svg" width={24.17} height={24.17} />
+                      <Image src="/yellow.svg" width={24.17} height={24.17} />
+                      <Image src="/yellow.svg" width={24.17} height={24.17} />
+                      <Image src="/yellow.svg" width={24.17} height={24.17} />
+                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                    </div>
+                    <p
+                      onClick={() => setRemark(true)}
+                      className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
+                    >
+                      View Remarks
+                    </p>
+                  </div>
                 </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
               </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1320px]:px-[10px] h-[59px] border-b-[0.5px] border-[#00000033] max-[1290px]:w-[1189px]">
-            <div className="flex items-center">
-              <p className="text-[12px] leading-[14.4px] opacity-70 w-[104px] mr-[25.9px] max-[1500px]:mr-[10px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[97px] mr-[50px] max-[1500px]:w-[120px] max-[1500px]:mr-[10px]">
-                Vitae facilisis
-              </p>
-              <p className="text-[14px] leading-[16.8px] w-[271px] mr-[7.26px] max-[1420px]:w-[220px] max-[1420px]:truncate">
-                Erat mattis curabitur pretium sit
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[52px]">
-                02/20/2024
-              </p>
-              <p className="text-[14px] leading-[16.8px] mr-[55px] max-[1365px]:mr-[10px]">
-                02/20/2024
-                <button
-                  onClick={() => setAssignment(true)}
-                  className="bg-[#30E29D] px-[10px] rounded-[6px] text-base font-semibold h-[29px] ml-[61.3px] max-[1450px]:ml-[30px]"
-                >
-                  View Assignment
-                </button>
-              </p>
-              <div className=" flex items-center gap-[22.09px] max-[1300px]:gap- border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
-                <div className="flex gap-[4.76px]">
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/yellow.svg" width={24.17} height={24.17} />
-                  <Image src="/blank.svg" width={24.17} height={24.17} />
-                </div>
-                <p
-                  onClick={() => setRemark(true)}
-                  className="text-[14px] leading-[16.8px] font-bold opacity-70 cursor-pointer text-[14px] underline"
-                >
-                  View Remarks
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="relative h-[32px] mt-[61px]">
-          <div className="flex gap-[16px] absolute right-[0px]">
-            <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-              <Image src="/Group 4.svg" width={14.13} height={14.13} />
-            </div>
-            <div className="flex gap-[8px]">
-              <p className="w-[32px] text-[17.23px] cursor-pointer bg-[#31E39E] leading-[16px] h-[32px] flex justify-center items-center text-black border-[#000]">
-                1
-              </p>
-              <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                2
-              </p>
-              <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                3
-              </p>
-              <p className="w-[25px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer"></p>
-              <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                42
-              </p>
-            </div>
-            <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-              <Image src="/Group 4.svg" width={14.13} height={14.13} />
-            </div>
-          </div>
+            ))}
         </div>
       </main>
       {assignment && (
