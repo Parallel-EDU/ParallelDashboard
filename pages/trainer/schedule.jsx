@@ -1,36 +1,373 @@
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useState, useEffect } from "react";
 import TrainerNavbar from "../../components/trainerbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("schedule");
-  const [addmodule, setaddmodule] = useState(false);
-  const [addassessment, setaddassessment] = useState(false);
-  const [viewprofile, setviewprofile] = useState(false);
-  const [count, setcount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [sessionTime, setsessionTime] = useState(false);
-  const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
-  const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
+  const [batches, setBatches] = useState([]);
+  const [selectedbatch, setselectedBatch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredBatches, setFilteredBatches] = useState([]);
+  const [timeMonday, setTimeMonday] = useState("");
+  const [periodMonday, setPeriodMonday] = useState("PM");
+  const [timeEndMonday, setTimeEndMonday] = useState("");
+  const [periodEndMonday, setPeriodEndMonday] = useState("PM");
+  const [timeTuesday, setTimeTuesday] = useState("");
+  const [periodMTuesday, setPeriodMTuesday] = useState("PM");
+  const [timeEndTuesday, setTimeEndTuesday] = useState("");
+  const [periodEndTuesday, setPeriodEndTuesday] = useState("PM");
+  const [timeWednesday, setTimeWednesday] = useState("");
+  const [periodWednesday, setPeriodWednesday] = useState("PM");
+  const [timeEndWednesday, setTimeEndWednesday] = useState("");
+  const [periodEndWednesday, setPeriodEndWednesday] = useState("PM");
+  const [timeThursday, setTimeThursday] = useState("");
+  const [periodThursday, setPeriodThursday] = useState("PM");
+  const [timeEndThursday, setTimeEndThursday] = useState("");
+  const [periodEndThursday, setPeriodEndThursday] = useState("PM");
+  const [timeFriday, setTimeFriday] = useState("");
+  const [periodFriday, setPeriodFriday] = useState("PM");
+  const [timeEndFriday, setTimeEndFriday] = useState("");
+  const [periodEndFriday, setPeriodEndFriday] = useState("PM");
 
-  const handleSelect = (value) => {
-    setItem(value);
-    setIsOpen(false);
+  const [Monday, setMonday] = useState({
+    batchId: "",
+    sessionType: "",
+    sessionName: "",
+    startTime: "",
+    endTime: "",
+    day: "Monday",
+  });
+  const [Tuesday, setTuesday] = useState({
+    batchId: "",
+    sessionType: "",
+    sessionName: "",
+    startTime: "",
+    endTime: "",
+    day: "Tuesday",
+  });
+  const [Wednesday, setWednesday] = useState({
+    batchId: "",
+    sessionType: "",
+    sessionName: "",
+    startTime: "",
+    endTime: "",
+    day: "Wednesday",
+  });
+  const [Thursday, setThursday] = useState({
+    batchId: "",
+    sessionType: "",
+    sessionName: "",
+    startTime: "",
+    endTime: "",
+    day: "Thursday",
+  });
+  const [Friday, setFriday] = useState({
+    batchId: "",
+    sessionType: "",
+    sessionName: "",
+    startTime: "",
+    endTime: "",
+    day: "Friday",
+  });
+
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      setBatches(res.data);
+      console.log(res.data);
+    }
+    fetchBatches();
+  }, []);
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("/api/trainer/schedule", Monday);
+      handleDeleteMonday();
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    try {
+      const response = await axios.post("/api/trainer/schedule", Tuesday);
+      handleDeleteTuesday();
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    try {
+      const response = await axios.post("/api/trainer/schedule", Wednesday);
+      handleDeleteWednesday();
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    try {
+      const response = await axios.post("/api/trainer/schedule", Thursday);
+      handleDeleteThursday();
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    try {
+      const response = await axios.post("/api/trainer/schedule", Friday);
+      handleDeleteFriday();
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    setactive("done");
   };
-  const handleTimeSelect = (value) => {
-    setSessionTimeValue(value);
-    setsessionTime(false);
+  const handleTimeChangeMonday = (e) => {
+    setTimeMonday(e.target.value);
+    setMonday({
+      ...Monday,
+      startTime: `${e.target.value} ${periodMonday}`,
+    });
   };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
+
+  const handlePeriodChangeMonday = (e) => {
+    setPeriodMonday(e.target.value);
+    setMonday({
+      ...Monday,
+      startTime: `${timeMonday} ${e.target.value}`,
+    });
   };
-  const handleChangeTextArea = (e) => {
-    setcount(e.target.value.length);
+  const handleTimeChangeEndMonday = (e) => {
+    setTimeEndMonday(e.target.value);
+    setMonday({
+      ...Monday,
+      endTime: `${e.target.value} ${periodEndMonday}`,
+    });
   };
+
+  const handlePeriodChangeEndMonday = (e) => {
+    setPeriodEndMonday(e.target.value);
+    setMonday({
+      ...Monday,
+      endTime: `${timeEndMonday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeTuesday = (e) => {
+    setTimeTuesday(e.target.value);
+    setTuesday({
+      ...Tuesday,
+      startTime: `${e.target.value} ${periodMTuesday}`,
+    });
+  };
+
+  const handlePeriodChangeTuesday = (e) => {
+    setPeriodMTuesday(e.target.value);
+    setTuesday({
+      ...Tuesday,
+      startTime: `${timeTuesday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeEndTuesday = (e) => {
+    setTimeEndTuesday(e.target.value);
+    setTuesday({
+      ...Tuesday,
+      endTime: `${e.target.value} ${periodEndTuesday}`,
+    });
+  };
+
+  const handlePeriodChangeEndTuesday = (e) => {
+    setPeriodEndTuesday(e.target.value);
+    setTuesday({
+      ...Tuesday,
+      endTime: `${timeEndTuesday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeWednesday = (e) => {
+    setTimeWednesday(e.target.value);
+    setWednesday({
+      ...Wednesday,
+      startTime: `${e.target.value} ${periodWednesday}`,
+    });
+  };
+
+  const handlePeriodChangeWednesday = (e) => {
+    setPeriodWednesday(e.target.value);
+    setWednesday({
+      ...Wednesday,
+      startTime: `${timeWednesday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeEndWednesday = (e) => {
+    setTimeEndWednesday(e.target.value);
+    setWednesday({
+      ...Wednesday,
+      endTime: `${e.target.value} ${periodEndWednesday}`,
+    });
+  };
+
+  const handlePeriodChangeEndWednesday = (e) => {
+    setPeriodEndWednesday(e.target.value);
+    setWednesday({
+      ...Wednesday,
+      endTime: `${timeEndWednesday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeThursday = (e) => {
+    setTimeThursday(e.target.value);
+    setThursday({
+      ...Thursday,
+      startTime: `${e.target.value} ${periodThursday}`,
+    });
+  };
+
+  const handlePeriodChangeThursday = (e) => {
+    setPeriodThursday(e.target.value);
+    setThursday({
+      ...Thursday,
+      startTime: `${timeThursday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeEndThursday = (e) => {
+    setTimeEndThursday(e.target.value);
+    setThursday({
+      ...Thursday,
+      endTime: `${e.target.value} ${periodEndThursday}`,
+    });
+  };
+
+  const handlePeriodChangeEndThursday = (e) => {
+    setPeriodEndThursday(e.target.value);
+    setThursday({
+      ...Thursday,
+      endTime: `${timeEndThursday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeFriday = (e) => {
+    setTimeFriday(e.target.value);
+    setFriday({
+      ...Friday,
+      startTime: `${e.target.value} ${periodFriday}`,
+    });
+  };
+
+  const handlePeriodChangeFriday = (e) => {
+    setPeriodFriday(e.target.value);
+    setFriday({
+      ...Friday,
+      startTime: `${timeFriday} ${e.target.value}`,
+    });
+  };
+  const handleTimeChangeEndFriday = (e) => {
+    setTimeEndFriday(e.target.value);
+    setFriday({
+      ...Friday,
+      endTime: `${e.target.value} ${periodEndFriday}`,
+    });
+  };
+
+  const handlePeriodChangeEndFriday = (e) => {
+    setPeriodEndFriday(e.target.value);
+    setFriday({
+      ...Friday,
+      endTime: `${timeEndFriday} ${e.target.value}`,
+    });
+  };
+  const handleClick = (batch) => {
+    setactive("Add next week Schedule");
+    setselectedBatch(batch);
+    setMonday({ ...Monday, batchId: batch });
+    setTuesday({ ...Tuesday, batchId: batch });
+    setWednesday({ ...Wednesday, batchId: batch });
+    setThursday({ ...Thursday, batchId: batch });
+    setFriday({ ...Friday, batchId: batch });
+  };
+  const handleChangeMonday = (event) => {
+    setMonday({ ...Monday, [event.target.name]: event.target.value });
+  };
+  const handleChangeTuesday = (event) => {
+    setTuesday({ ...Tuesday, [event.target.name]: event.target.value });
+  };
+  const handleChangeWednesday = (event) => {
+    setWednesday({ ...Wednesday, [event.target.name]: event.target.value });
+  };
+  const handleChangeThursday = (event) => {
+    setThursday({ ...Thursday, [event.target.name]: event.target.value });
+  };
+  const handleChangeFriday = (event) => {
+    setFriday({ ...Friday, [event.target.name]: event.target.value });
+  };
+  const handleDeleteMonday = () => {
+    setMonday({
+      batchId: "",
+      sessionType: "",
+      sessionName: "",
+      startTime: "",
+      endTime: "",
+      day: "Monday",
+    });
+    setTimeMonday("");
+    setTimeEndMonday("");
+    setPeriodMonday("PM");
+    setPeriodEndMonday("PM");
+  };
+  const handleDeleteTuesday = () => {
+    setTuesday({
+      batchId: "",
+      sessionType: "",
+      sessionName: "",
+      startTime: "",
+      endTime: "",
+      day: "Tuesday",
+    });
+    setTimeTuesday("");
+    setTimeEndTuesday("");
+    setPeriodTuesday("PM");
+    setPeriodEndTuesday("PM");
+  };
+  const handleDeleteWednesday = () => {
+    setWednesday({
+      batchId: "",
+      sessionType: "",
+      sessionName: "",
+      startTime: "",
+      endTime: "",
+      day: "Wednesday",
+    });
+    setTimeWednesday("");
+    setTimeEndWednesday("");
+    setPeriodWednesday("PM");
+    setPeriodEndWednesday("PM");
+  };
+  const handleDeleteThursday = () => {
+    setThursday({
+      batchId: "",
+      sessionType: "",
+      sessionName: "",
+      startTime: "",
+      endTime: "",
+      day: "Thursday",
+    });
+    setTimeThursday("");
+    setTimeEndThursday("");
+    setPeriodThursday("PM");
+    setPeriodEndThursday("PM");
+  };
+  const handleDeleteFriday = () => {
+    setFriday({
+      batchId: "",
+      sessionType: "",
+      sessionName: "",
+      startTime: "",
+      endTime: "",
+      day: "Friday",
+    });
+    setTimeFriday("");
+    setTimeEndFriday("");
+    setPeriodFriday("PM");
+    setPeriodEndFriday("PM");
+  };
+  useEffect(() => {
+    const results = batches.filter(
+      (batch) =>
+        batch.batchId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.students?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor1?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.course?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    setFilteredBatches(results);
+  }, [searchTerm, batches]);
   return (
     <>
       <TrainerNavbar />
@@ -40,26 +377,30 @@ export default function Jobs() {
           <>
             <div className="mb-[13px] bg-white pl-[19.08px] max-md:flex-col max-md:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[34px] max-sm:gap-[8px] items-center">
               <input
-                type="search"
+                type="text"
                 name=""
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-[483px] max-lg:w-[350px] max-md:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                 placeholder="Search student name, instructor, batch ID"
                 id=""
               />
               <Image
-                src="/search.svg"
+                src="/images/search.svg"
                 className="cursor-pointer max-lg:left-[330px] max-md:right-[24px] max-md:left-auto max-hamburger:right-[34px] max-hamburger:top-[27px] max-sm:top-[28px] absolute left-[467.88px]"
                 width={24}
                 height={24}
               />
               <div className="w-[244px] px-[14.28px] max-md:w-full  border-[1px] border-[#0000004D] rounded-[8px]">
-                <select className="h-[48px] w-full">
-                  <option value="Select course" className="py-[18.5px]">
-                    Select course
+                <select
+                  className="h-[48px] w-full"
+                  onChange={(e) => setSearchTerm(e.target.value)} // Set searchTerm when an option is selected
+                >
+                  <option value="Full Stack Development">
+                    Full Stack Development
                   </option>
-                  <option value="Select course" className="w-[244px] h-[48px]">
-                    Select course
-                  </option>
+                  <option value="Frontend Mastery">Frontend Mastery</option>
+                  <option value="Backend Mastery">Backend Mastery</option>
+                  <option value="">All</option>
                 </select>
               </div>
             </div>
@@ -81,256 +422,71 @@ export default function Jobs() {
                   | Start date{" "}
                 </p>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    01
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    02
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    03
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    04
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    05
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    06
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    07
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    08
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    09
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    10
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("Add next week Schedule")}
-                  className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  Add next week Schedule{" "}
-                </button>
-              </div>
+              {searchTerm === ""
+                ? batches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
+                          {batch.batchId}{" "}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}{" "}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleClick(batch.batchId)}
+                        className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        Add next week Schedule{" "}
+                      </button>
+                    </div>
+                  ))
+                : filteredBatches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
+                          {batch.batchId}{" "}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}{" "}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleClick(batch.batchId)}
+                        className="w-[210px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        Add next week Schedule{" "}
+                      </button>
+                    </div>
+                  ))}
             </div>
           </>
         )}
@@ -348,11 +504,16 @@ export default function Jobs() {
                   <div className="w-[204px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="sessionType"
+                      onChange={handleChangeMonday}
+                      value={Monday.sessionType}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] text-[14px] bg-[white]"
                     >
-                      <option value="">Select session type</option>
+                      <option value="Select session type">
+                        Select session type
+                      </option>
+                      <option value="Teaching">Teaching</option>
                     </select>
                   </div>
                 </div>
@@ -362,7 +523,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={Monday.sessionName}
+                    onChange={handleChangeMonday}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -376,19 +539,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeMonday}
+                        onChange={handleTimeChangeMonday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodMonday}
+                        onChange={handlePeriodChangeMonday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -402,19 +567,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeEndMonday}
+                        onChange={handleTimeChangeEndMonday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodEndMonday}
+                        onChange={handlePeriodChangeEndMonday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -436,11 +603,14 @@ export default function Jobs() {
                   <div className="w-[204px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="sessionType"
+                      value={Tuesday.sessionType}
+                      onChange={handleChangeTuesday}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] text-[14px] bg-[white]"
                     >
                       <option value="">Select session type</option>
+                      <option value="Teaching">Teaching</option>
                     </select>
                   </div>
                 </div>
@@ -450,7 +620,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={Tuesday.sessionName}
+                    onChange={handleChangeTuesday}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -464,19 +636,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeTuesday}
+                        onChange={handleTimeChangeTuesday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodMTuesday}
+                        onChange={handlePeriodChangeTuesday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -490,19 +664,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeEndTuesday}
+                        onChange={handleTimeChangeEndTuesday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodEndTuesday}
+                        onChange={handlePeriodChangeEndTuesday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -524,11 +700,14 @@ export default function Jobs() {
                   <div className="w-[204px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="sessionType"
+                      value={Wednesday.sessionType}
+                      onChange={handleChangeWednesday}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] text-[14px] bg-[white]"
                     >
                       <option value="">Select session type</option>
+                      <option value="Teaching">Teaching</option>
                     </select>
                   </div>
                 </div>
@@ -538,7 +717,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={Wednesday.sessionName}
+                    onChange={handleChangeWednesday}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -552,19 +733,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeWednesday}
+                        onChange={handleTimeChangeWednesday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodWednesday}
+                        onChange={handlePeriodChangeWednesday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -578,19 +761,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeEndWednesday}
+                        onChange={handleTimeChangeEndWednesday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodEndWednesday}
+                        onChange={handlePeriodChangeEndWednesday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -612,11 +797,14 @@ export default function Jobs() {
                   <div className="w-[204px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="sessionType"
+                      value={Thursday.sessionType}
+                      onChange={handleChangeThursday}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] text-[14px] bg-[white]"
                     >
                       <option value="">Select session type</option>
+                      <option value="Teaching">Teaching</option>
                     </select>
                   </div>
                 </div>
@@ -626,7 +814,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={Thursday.sessionName}
+                    onChange={handleChangeThursday}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -640,19 +830,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeThursday}
+                        onChange={handleTimeChangeThursday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodThursday}
+                        onChange={handlePeriodChangeThursday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -666,19 +858,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeEndThursday}
+                        onChange={handleTimeChangeEndThursday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodEndThursday}
+                        onChange={handlePeriodChangeEndThursday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -700,11 +894,14 @@ export default function Jobs() {
                   <div className="w-[204px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="sessionType"
+                      value={Friday.sessionType}
+                      onChange={handleChangeFriday}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] text-[14px] bg-[white]"
                     >
                       <option value="">Select session type</option>
+                      <option value="Teaching">Teaching</option>
                     </select>
                   </div>
                 </div>
@@ -714,7 +911,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={Friday.sessionName}
+                    onChange={handleChangeFriday}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -728,19 +927,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeFriday}
+                        onChange={handleTimeChangeFriday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodFriday}
+                        onChange={handlePeriodChangeFriday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -754,19 +955,21 @@ export default function Jobs() {
                       <input
                         type="time"
                         className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                        name=""
+                        value={timeEndFriday}
+                        onChange={handleTimeChangeEndFriday}
                         id=""
                       />
                     </div>
                     <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                       <select
                         type="text"
-                        name=""
+                        value={periodEndFriday}
+                        onChange={handlePeriodChangeEndFriday}
                         id=""
                         className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                       >
-                        <option value="">PM</option>
-                        <option value="">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM">AM</option>
                       </select>
                     </div>
                   </div>
@@ -788,7 +991,7 @@ export default function Jobs() {
         {active === "generate schedule" && (
           <div className="w-full pt-[49.08px] max-md:pl-[40px] max-sm:pl-[20px] pl-[59px] pb-[47px] bg-white rounded-[8px]">
             <h1 className="text-[20px] mb-[29.16px] leading-[26px] font-semibold">
-              BFSD053AK Week 05 Schedule
+              {selectedbatch} Schedule
             </h1>
             <div className="pb-[75px] overflow-scroll w-full bg-white rounded-[8px]">
               <div className="flex fixed z-10 sticky top-0 bg-white items-center pl-[11.5px] h-[45px] border-b-[0.5px] min-w-[1109px] border-[#00000033]">
@@ -812,15 +1015,17 @@ export default function Jobs() {
                     Monday
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Monday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Monday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Monday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Monday.endTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -830,26 +1035,29 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteMonday}
                     width={24}
                     height={24}
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
+              {/* <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
                 <div className="flex items-center">
                   <p className="text-[12px] leading-[14.4px] w-[104px] mr-[25px] max-xl:w-[30px]"></p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Monday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Monday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Monday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Monday.startTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -859,28 +1067,31 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteFriday}
                     width={24}
                     height={24}
                   />
                 </div>
-              </div>
+              </div> */}
               <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
                 <div className="flex items-center">
                   <p className="text-[12px] leading-[14.4px] w-[104px] mr-[25px] max-xl:w-[30px]">
                     Tuesday
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Tuesday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Tuesday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Tuesday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Tuesday.endTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -890,8 +1101,9 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteTuesday}
                     width={24}
                     height={24}
                   />
@@ -903,15 +1115,17 @@ export default function Jobs() {
                     Wednesday
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Wednesday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Wednesday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Wednesday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Wednesday.endTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -921,8 +1135,9 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteWednesday}
                     width={24}
                     height={24}
                   />
@@ -934,15 +1149,17 @@ export default function Jobs() {
                     Thursday
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Thursday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Thursday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Thursday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Thursday.endTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -952,8 +1169,9 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteThursday}
                     width={24}
                     height={24}
                   />
@@ -965,15 +1183,17 @@ export default function Jobs() {
                     Friday
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                    Vitae facilisis
+                    {Friday.sessionType}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1350px]:w-[200px] max-[1370px]:w-[200px] max-[1370px]:truncate">
-                    Erat mattis curabitur pretium sit
+                    {Friday.sessionName}
                   </p>
                   <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                    08 : 00 PM
+                    {Friday.startTime}
                   </p>
-                  <p className="text-[16px] leading-[19.2px]">08 : 00 PM</p>
+                  <p className="text-[16px] leading-[19.2px]">
+                    {Friday.endTime}
+                  </p>
                 </div>
                 <div className="flex gap-[28px] items-center">
                   <button
@@ -983,8 +1203,9 @@ export default function Jobs() {
                     Update
                   </button>
                   <Image
-                    src="../../delete.svg"
+                    src="/images../../delete.svg"
                     className="cursor-pointer"
+                    onClick={handleDeleteFriday}
                     width={24}
                     height={24}
                   />
@@ -993,7 +1214,7 @@ export default function Jobs() {
             </div>
             <div className="flex gap-[17px] max-sm:pr-[20px] max-[400px]:flex-col">
               <button
-                onClick={() => setactive("done")}
+                onClick={handleSubmit}
                 className="w-[130px] mt-[51px] h-[37px] max-sm:w-full text-white bg-[#000] rounded-[6px] text-[14px] leading-[16.8px]"
               >
                 Send Schedule
@@ -1010,9 +1231,9 @@ export default function Jobs() {
         {active === "done" && (
           <div className="w-full flex justify-center pt-[55px] h-[630px] max-sm:px-[20px] max-[360px]:px-[10px] pb-[47px] bg-white rounded-[8px]">
             <div className="w-[483px] h-[419px] border-[1px] max-sm:px-[20px] border-[#00000033] rounded-[6px] max-[360px]:px-[10px] pt-[30px] flex flex-col items-center">
-              <Image src="/done.svg" width={193.08} height={193.08} />
+              <Image src="/images/done.svg" width={193.08} height={193.08} />
               <h1 className="text-[20px] leading-[26px] mt-[36.92px] font-semibold">
-                Schedule Sent to Batch BFSD053AK
+                Schedule Sent to Batch {selectedbatch}
               </h1>
               <button
                 onClick={() => setactive("schedule")}

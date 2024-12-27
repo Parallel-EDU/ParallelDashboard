@@ -1,3 +1,4 @@
+// pages/api/users/[id].js
 import { connect } from '../../lib/db';
 import userModel from '../../models/User';
 import mongoose from 'mongoose';
@@ -11,14 +12,12 @@ async function findUserById(id) {
   return userModel.findById(id);
 }
 
-
 async function updateUserById(id, updates) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new Error('Invalid ID');
   }
   return userModel.findByIdAndUpdate(id, updates, { new: true });
 }
-
 
 async function deleteUserById(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -54,7 +53,7 @@ export default async function handler(req, res) {
         if (!deletedUser) {
           return res.status(404).json({ message: 'User not found' });
         }
-        res.status(204).end(); 
+        res.status(204).end();
         break;
 
       default:

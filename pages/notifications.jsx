@@ -119,7 +119,7 @@ function Notifications() {
         ) : selectedNotification ? (
           <>
             <Image
-              src="back.svg"
+              src="/imagesback.svg"
               className="mb-[28.02px] cursor-pointer"
               onClick={() => setSelectedNotification(null)}
               width={44.97}
@@ -148,7 +148,7 @@ function Notifications() {
                 className="hidden max-md:block"
               >
                 <Image
-                  src="/Vector (2).svg"
+                  src="/images/Vector (2).svg"
                   className="absolute max-md:right-[40px] max-sm:right-[20px] right-[50.33px] cursor-pointer top-[37.29px]"
                   width={23.35}
                   height={23.35}

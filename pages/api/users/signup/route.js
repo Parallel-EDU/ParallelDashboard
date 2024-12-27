@@ -1,9 +1,8 @@
-"use client"
-
 import { connect } from '../../../lib/db';
 import User from '../../../models/User';
 import bcryptjs from 'bcrypt';
-
+import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
 
 export default async function handler(req, res) {
@@ -22,23 +21,12 @@ export default async function handler(req, res) {
 
     console.log("Request body", req.body);
 
-    // const apiKey = '3f733834a33525b25ed8d1bd9d5284c1b899cbd2';  
-    // const hunterResponse = await axios.get(`https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${apiKey}`);
-    // const emailVerification = hunterResponse.data;
-    // console.log("email verified");
-
-    // if (emailVerification.data.status !== 'valid') {
-    //   return res.status(400).json({ success: false, error: 'Invalid email address' });
-
-    // }
-
     
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(200).json({ success: false, error: 'User already exists' });
     }
-
+     
     console.log("after user exist");
     const salt = await bcryptjs.genSalt(10);
     console.log(salt);

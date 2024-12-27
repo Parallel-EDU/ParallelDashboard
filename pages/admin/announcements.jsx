@@ -1,29 +1,150 @@
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
-import TrainerNavbar from "../../components/trainerbar";
+import { useEffect, useState } from "react";
 import AdminNavbar from "../../components/adminbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("");
   const [count, setcount] = useState(0);
+  const [clicked, setClicked] = useState(false);
+  const [clickedStudent, setClickedStudent] = useState(false);
+  const [batchData, setBatchData] = useState([]);
   const [count2, setcount2] = useState(0);
   const [count3, setcount3] = useState(0);
-
+  const [trainerMail, setTrainerMail] = useState({
+    heading: "",
+    message: "",
+    link: "",
+  });
+  const [studentMail, setStudentMail] = useState({
+    heading: "",
+    message: "",
+    link: "",
+    batchId: "",
+    course: "",
+    sendMail: false,
+  });
+  const [graduatesMail, setGraduatesMail] = useState({
+    heading: "",
+    message: "",
+    link: "",
+    sendMail: false,
+  });
+  const date = new Date();
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      const data = res.data;
+      const BatchId = [];
+      data.forEach((batch) => {
+        const [day, month, year] = batch.endDate.split("/");
+        const endDate = new Date(`20${year}`, month - 1, day);
+        if (date < endDate) {
+          BatchId.push(batch.batchId);
+        }
+      });
+      setBatchData(BatchId);
+    }
+    fetchBatches();
+  }, []);
+  const handleChangeTrainer = (event) => {
+    setTrainerMail({ ...trainerMail, [event.target.name]: event.target.value });
+  };
+  const handleChangeStudent = (event) => {
+    setStudentMail({ ...studentMail, [event.target.name]: event.target.value });
+  };
+  const handleChangeGraduates = (event) => {
+    setGraduatesMail({
+      ...graduatesMail,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const handleSubmitTrainer = async () => {
+    setactive("");
+    try {
+      const res = await fetch("/api/admin/announcements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(trainerMail),
+      });
+      setTrainerMail({
+        heading: "",
+        message: "",
+        link: "",
+      });
+    } catch (error) {}
+  };
+  const handleSubmitStudent = async () => {
+    setactive("");
+    try {
+      const res = await fetch("/api/admin/announcementStudents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(studentMail),
+      });
+      setStudentMail({
+        heading: "",
+        message: "",
+        link: "",
+      });
+    } catch (error) {}
+  };
+  const handleSubmitGraduates = async () => {
+    setactive("");
+    try {
+      const res = await fetch(`/api/admin/announcementGraduates`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graduatesMail),
+      });
+      setGraduatesMail({
+        heading: "",
+        message: "",
+        link: "",
+        sendMail: false,
+      });
+      setClicked(false);
+    } catch (error) {}
+  };
   const handleChangeTextArea = (e) => {
     setcount(e.target.value.length);
+    setStudentMail({ ...studentMail, message: e.target.value });
   };
   const handleChangeTextArea2 = (e) => {
     setcount2(e.target.value.length);
+    setTrainerMail({ ...trainerMail, message: e.target.value });
   };
   const handleChangeTextArea3 = (e) => {
     setcount3(e.target.value.length);
+    setGraduatesMail({ ...graduatesMail, message: e.target.value });
   };
+  const handleMailGraduates = () => {
+    setClicked(!clicked);
+  };
+  const handleMailStudent = () => {
+    setClickedStudent(!clickedStudent);
+  };
+  useEffect(() => {
+    setGraduatesMail({
+      ...graduatesMail,
+      sendMail: clicked,
+    });
+  }, [clicked]);
+  useEffect(() => {
+    setStudentMail({
+      ...studentMail,
+      sendMail: clickedStudent,
+    });
+  }, [clickedStudent]);
   return (
     <>
       <AdminNavbar />
-
       <main className="relative px-[59.5px] pb-[78px] pt-[0] max-md:px-[40px] max-sm:px-[20px]">
         {active === "" && (
           <>
@@ -58,7 +179,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -81,7 +202,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="heading"
+                    onChange={handleChangeStudent}
                     placeholder="Enter heading"
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -99,7 +221,7 @@ export default function Jobs() {
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count} / 250px
+                      {count} / 250
                     </p>
                   </div>
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">
@@ -107,7 +229,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="link"
+                    onChange={handleChangeStudent}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -116,7 +239,13 @@ export default function Jobs() {
                   </p>
                   <div className="flex gap-[20px] max-sm:w-full max-sm:flex-wrap w-[494px]">
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeStudent}
+                        name="course"
+                        value={"Full Stack Development"}
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] leading-[16.8px]"
@@ -125,18 +254,30 @@ export default function Jobs() {
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeStudent}
+                        name="course"
+                        value={"Backend Mastery"}
+                        id="courseBackend"
+                      />
                       <label
-                        htmlFor="course"
+                        htmlFor="courseBackend"
                         className="text-[14px] leading-[16.8px]"
                       >
                         Backend Mastery
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeStudent}
+                        name="course"
+                        value={"Frontend Mastery"}
+                        id="courseFront"
+                      />
                       <label
-                        htmlFor="course"
+                        htmlFor="courseFront"
                         className="text-[14px] h-[20px] leading-[16.8px]"
                       >
                         Frontend Mastery{" "}
@@ -149,20 +290,30 @@ export default function Jobs() {
                   <div className="w-[407px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="batchId"
+                      onChange={handleChangeStudent}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[45px] bg-[white]"
                     >
-                      <option value="">Batch Code</option>
+                      <option value="">Select Batch</option>
+                      {batchData.map((batch) => (
+                        <option key={batch} value={batch}>
+                          {batch}
+                        </option>
+                      ))}{" "}
                     </select>
                   </div>
                   <div className="flex mt-[36px] max-sm:items-start max-sm:flex-col-reverse gap-[26.5px] items-center">
-                    <button className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]">
+                    <button
+                      onClick={handleSubmitStudent}
+                      className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]"
+                    >
                       Send Announcement
                     </button>
                     <label
                       className="text-[14px] leading-[16.8px] cursor-pointer flex items-center"
                       htmlFor="send"
+                      onClick={handleMailStudent}
                     >
                       <input
                         className="w-[15px] h-[15px] mr-[7px]"
@@ -182,7 +333,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -205,7 +356,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="heading"
+                    onChange={handleChangeTrainer}
                     placeholder="Enter heading"
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -223,7 +375,7 @@ export default function Jobs() {
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count2} / 250px
+                      {count2} / 250
                     </p>
                   </div>
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">
@@ -231,13 +383,17 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="link"
+                    onChange={handleChangeTrainer}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
 
                   <div className="flex mt-[36px] max-sm:items-start max-sm:flex-col-reverse gap-[26.5px] items-center">
-                    <button className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]">
+                    <button
+                      onClick={handleSubmitTrainer}
+                      className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]"
+                    >
                       Send Announcement
                     </button>
                     <label
@@ -262,7 +418,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -285,7 +441,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="heading"
+                    onChange={handleChangeGraduates}
                     placeholder="Enter heading"
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -303,7 +460,7 @@ export default function Jobs() {
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count3} / 250px
+                      {count3} / 250
                     </p>
                   </div>
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">
@@ -311,16 +468,21 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="link"
+                    onChange={handleChangeGraduates}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
 
                   <div className="flex mt-[36px] max-sm:items-start max-sm:flex-col-reverse gap-[26.5px] items-center">
-                    <button className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]">
+                    <button
+                      onClick={handleSubmitGraduates}
+                      className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] py-[10px]"
+                    >
                       Send Announcement
                     </button>
                     <label
+                      onClick={handleMailGraduates}
                       className="text-[14px] leading-[16.8px] cursor-pointer flex items-center"
                       htmlFor="send"
                     >

@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useEffect, useState } from "react";
 import AdminNavbar from "../../components/adminbar";
+import axios from "axios";
+import { set } from "mongoose";
 
 export default function Jobs() {
   const [active, setactive] = useState("");
@@ -13,18 +13,225 @@ export default function Jobs() {
   const [year, setyear] = useState("Select year");
   const [isOpenMonth, setIsOpenMonth] = useState(false);
   const [month, setmonth] = useState("Select month");
+  const [form, setForm] = useState({
+    batchId: "",
+    course: "",
+    students: "",
+    startDate: "",
+    endDate: "",
+    instructor1: "",
+    instructor2: "",
+    progress: "",
+    whatsapp: "",
+    github: "",
+  });
 
-  const handleSelect = (value) => {
-    setItem(value);
-    setIsOpen(false);
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  };
+
+  const [item2, setItem2] = useState("");
+  const [batches, setBatches] = useState([]);
+  const [selectedbatch, setselectedBatch] = useState([]);
+  const [searchTermBatches, setSearchTermBatches] = useState("");
+  const [filteredBatches, setFilteredBatches] = useState([]);
+  const [studentsData, setstudentsData] = useState([]);
+  const [newStudentsData, setnewStudentsData] = useState([]);
+  const [searchTermNewStudent, setsearchTermNewStudent] = useState("");
+  const [searchTermStudent, setsearchTermStudent] = useState("");
+  const [searchnewStudent, setsearchnewStudent] = useState([]);
+  const [searchStudent, setsearchStudent] = useState([]);
+  const [BatchesPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [addStudents, setAddStudents] = useState(false);
+
+  const totalPages = Math.ceil(batches.length / BatchesPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      setBatches(res.data);
+      console.log(res.data);
+    }
+    fetchBatches();
+  }, []);
+  const handleSelect2 = (value, batchId) => {
+    setactive("view details");
+    const studentOfThisBatch = [];
+    setItem2(value);
+    console.log(value);
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/${value}`);
+      setselectedBatch(res.data);
+    }
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/route`);
+      const data = res.data;
+      data.forEach((student) => {
+        if (student.batchId === batchId) {
+          studentOfThisBatch.push(student);
+        }
+      });
+      setstudentsData(studentOfThisBatch);
+    }
+    fetchBatches();
+    fetchstudents();
+  };
+  const handleAddStudents = () => {
+    setAddStudents(true);
+    const studentOfThisBatch = [];
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/route`);
+      const data = res.data;
+      data.forEach((student) => {
+        if (student.batchId === undefined) {
+          studentOfThisBatch.push(student);
+        }
+      });
+      setnewStudentsData(studentOfThisBatch);
+    }
+    fetchstudents();
+  };
+
+  useEffect(() => {
+    const results = batches.filter(
+      (batch) =>
+        batch.batchId
+          ?.toLowerCase()
+          .includes(searchTermBatches.toLowerCase()) ||
+        batch.students
+          ?.toLowerCase()
+          .includes(searchTermBatches.toLowerCase()) ||
+        batch.instructor1
+          ?.toLowerCase()
+          .includes(searchTermBatches.toLowerCase()) ||
+        batch.instructor2
+          ?.toLowerCase()
+          .includes(searchTermBatches.toLowerCase()) ||
+        batch.course?.toLowerCase().includes(searchTermBatches.toLowerCase())
+    );
+
+    setFilteredBatches(results);
+  }, [searchTermBatches, batches]);
+
+  useEffect(() => {
+    const results = studentsData.filter(
+      (student) =>
+        student.name?.toLowerCase().includes(searchTermStudent.toLowerCase()) ||
+        student.batchId?.toLowerCase().includes(searchTermStudent.toLowerCase())
+    );
+
+    setsearchStudent(results);
+  }, [searchTermStudent, studentsData]);
+
+  useEffect(() => {
+    const results = newStudentsData.filter(
+      (student) =>
+        student.name
+          ?.toLowerCase()
+          .includes(searchTermNewStudent.toLowerCase()) ||
+        student.batchId
+          ?.toLowerCase()
+          .includes(searchTermNewStudent.toLowerCase())
+    );
+
+    setsearchnewStudent(results);
+  }, [searchTermNewStudent, newStudentsData]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const res = await fetch("/api/batch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      console.log("Batch created successfully", data);
+      setactive("");
+    } catch (error) {
+      console.error("Failed to create batch", error);
+    }
+  };
+  const handleClearFilter = () => {
+    setItem("Select Course");
+    setSearchTermBatches("");
+    setmonth("Select Month");
+    setyear("Select Year");
+    setfilter(false);
   };
   const handleSelectMonth = (value) => {
     setmonth(value);
     setIsOpenMonth(false);
+    setSearchTermBatches(value);
   };
   const handleSelectYear = (value) => {
     setyear(value);
     setIsOpenYear(false);
+    setSearchTermBatches(value);
+  };
+  const handleSelect = (value) => {
+    setItem(value);
+    setIsOpen(false);
+    setSearchTermBatches(value);
+  };
+
+  const handleReduce = () => {
+    if (currentPage === 1) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const handleIncrease = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  const handleAddSelectedStudent = async (value) => {
+    const data = {
+      batchId: form.batchId,
+      course: form.course,
+    };
+
+    try {
+      const response = await fetch(`/api/onboarding/personalInfo/${value}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        console.log(result.user);
+      } else {
+        alert("Failed to update user");
+        console.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/route`);
+      const studentOfThisBatch = [];
+      const data = res.data;
+      data.forEach((student) => {
+        if (student.batchId === form.batchId) {
+          studentOfThisBatch.push(student);
+        }
+      });
+      setstudentsData(studentOfThisBatch);
+    }
+    fetchstudents();
+    handleAddStudents();
   };
   return (
     <>
@@ -36,14 +243,15 @@ export default function Jobs() {
             <div className="mb-[13px] justify-between bg-white pl-[19.08px] max-md:flex-col max-md:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[30.92px] rounded-[6px] flex gap-[16px] max-sm:gap-[8px] items-center gap-[27.5px]">
               <div className="flex max-[500px]:flex-col max-[500px]:items-start max-[500px]:w-full gap-[16px] max-sm:gap-[8px] items-center gap-[27.5px]">
                 <input
-                  type="search"
+                  type="text"
                   name=""
+                  onChange={(e) => setSearchTermBatches(e.target.value)}
                   className="w-[365px] max-[500px]:pr-[40px] max-[800px]:w-[310px] max-[500px]:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] max-sm:pr-0 border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                   placeholder="Search by student name, PAN number"
                   id=""
                 />
                 <Image
-                  src="/search.svg"
+                  src="/images/search.svg"
                   className="cursor-pointer max-[500px]:left-auto max-[500px]:right-[34px] max-[800px]:left-[290px] max-hamburger:top-[27px] max-sm:top-[27px] absolute left-[347.88px]"
                   width={24}
                   height={24}
@@ -52,7 +260,7 @@ export default function Jobs() {
                   onClick={() => setfilter(true)}
                   className="cursor-pointer h-[44px] max-[500px]:hidden border-[1px] px-[16px] border-[black] rounded-[9px] py-[13px] flex gap-[8px]"
                 >
-                  <Image src="/filter-fill.svg" width={18} height={18} />
+                  <Image src="/images/filter-fill.svg" width={18} height={18} />
                   <p className="text-[14px] leading-[16.94px]">Filter by</p>
                 </div>
               </div>
@@ -67,7 +275,7 @@ export default function Jobs() {
                   onClick={() => setfilter(true)}
                   className="cursor-pointer h-[44px] max-[500px]:w-full max-[500px]:justify-center max-[500px]:flex hidden border-[1px] px-[16px] border-[black] rounded-[9px] py-[13px] flex gap-[8px]"
                 >
-                  <Image src="/filter-fill.svg" width={18} height={18} />
+                  <Image src="/images/filter-fill.svg" width={18} height={18} />
                   <p className="text-[14px] leading-[16.94px]">Filter by</p>
                 </div>
               </div>
@@ -90,281 +298,95 @@ export default function Jobs() {
                   | Start Date &nbsp;&nbsp;| Course
                 </p>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    01
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
+              {searchTermBatches === ""
+                ? batches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {batch.batchId}{" "}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.instructor1}{" "}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate} |{" "}
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelect2(batch._id, batch.batchId)}
+                        className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  ))
+                : filteredBatches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {batch.batchId}{" "}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.instructor1}{" "}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate} |{" "}
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelect2(batch._id, batch.batchId)}
+                        className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  ))}
+              {searchTermBatches === "" && totalPages !== 1 && (
+                <div className="pagination flex gap-[16px] max-smallerphone:gap-[8px] max-lg:relative max-lg:top-0 max-lg:mt-[30px] max-lg:left-[0px] max-sm:left-[0px] absolute right-[60px] bottom-[31px]">
+                  <div
+                    onClick={handleReduce}
+                    className="w-[32px] h-[32px] flex max-smallerphone:pr-0 pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer"
+                  >
+                    <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                  </div>
+                  <Pagination
+                    BatchesPerPage={BatchesPerPage}
+                    totalBatches={batches.length}
+                    paginate={paginate}
+                    currentPage={currentPage}
+                  />
+                  <div
+                    onClick={handleIncrease}
+                    className="w-[32px] rotate-180 h-[32px] max-smallphone:pr-0 flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer"
+                  >
+                    <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                  </div>
                 </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    02
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    03
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    04
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    05
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    06
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    07
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    08
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    09
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    10
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    Ahmed
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024 | FSD
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex gap-[16px] max-smallerphone:gap-[8px] max-:top-0 max-lg:mt-[30px] max-lg:left-[60px] max-md:left-[40px] max-sm:left-[20px] absolute right-[60px] bottom-[31px]">
-                <div className="w-[32px] h-[32px] flex max-smallerphone:pr-0 pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
-                </div>
-                <div className="flex gap-[8px] max-smallerphone:gap-[6px]">
-                  <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] max-smallphone:text-base cursor-pointer bg-black leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-black text-white">
-                    1
-                  </p>
-                  <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                    2
-                  </p>
-                  <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                    3
-                  </p>
-                  <p className="w-[25px] max-smallphone:w-[20px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer">
-                    ...
-                  </p>
-                  <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                    42
-                  </p>
-                </div>
-                <div className="w-[32px] rotate-180 h-[32px] max-smallphone:pr-0 flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
-                </div>
-              </div>
+              )}
             </div>
           </>
         )}
@@ -372,7 +394,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -396,6 +418,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.batchId}
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -407,6 +430,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.course}
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -418,19 +442,9 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.students}
                     id=""
                     className="w-[103px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
-                  />
-                </div>
-                <div className="max-hamburger:w-[100%]">
-                  <p className="text-[#2C2E32] text-[14px] leading-[18.2px] mb-[10px]">
-                    Progress
-                  </p>
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className="w-[144px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
               </div>
@@ -442,6 +456,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.instructor1}
                     id=""
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -454,6 +469,7 @@ export default function Jobs() {
                     type="text"
                     name=""
                     id=""
+                    value={selectedbatch.instructor2}
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
@@ -465,6 +481,7 @@ export default function Jobs() {
                     type="text"
                     name=""
                     id=""
+                    value={selectedbatch.startDate}
                     className="w-[142px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
@@ -476,6 +493,7 @@ export default function Jobs() {
                     type="text"
                     name=""
                     id=""
+                    value={selectedbatch.endDate}
                     className="w-[142px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
@@ -491,6 +509,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.whatsapp}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -502,6 +521,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedbatch.github}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -513,14 +533,15 @@ export default function Jobs() {
             </h1>
             <div className="mb-[13px] bg-white pl-[19.08px] max-sm:flex-col max-sm:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[34px] max-sm:gap-[8px] items-center">
               <input
-                type="search"
+                type="text"
                 name=""
+                onChange={(e) => setsearchTermStudent(e.target.value)}
                 className="w-[483px] max-sm:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                 placeholder="Search student name, instructor, batch ID"
                 id=""
               />
               <Image
-                src="/search.svg"
+                src="/images/search.svg"
                 className="cursor-pointer max-sm:right-[24px] max-sm:left-auto max-sm:top-[] max-sm:right-[30px] max-hamburger:right-[34px] max-hamburger:top-[27px] max-sm:top-[28px] absolute left-[467.88px]"
                 width={24}
                 height={24}
@@ -538,179 +559,54 @@ export default function Jobs() {
                   Course
                 </p>
                 <p className="text-[14px] leading-[16.8px] opacity-70 w-[] mr-[7px]">
-                  UIN | College | passing Year | Contact number | Email
+                  UIN | College | passing Year
                 </p>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    01
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    02
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    03
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    04
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    05
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    06
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    07
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    08
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    09
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    10
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
-                    FSD05202432 | JSSIT | 2024 | +91 89023 09234 |
-                    viosut@gmail.com
-                  </p>
-                </div>
-              </div>
+              {searchTermStudent === ""
+                ? studentsData.map((student, index) => (
+                    <div
+                      key={student._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {student.name}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {student.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
+                          {student._id.slice(0, 8)} | {student.college} |{" "}
+                          {student.yearOfPass}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                : searchStudent.map((student, index) => (
+                    <div
+                      key={student._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {student.name}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {student.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
+                          {student._id.slice(0, 8)} | {student.college} |{" "}
+                          {student.yearOfPass}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
             </div>
           </>
         )}
@@ -718,7 +614,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -741,7 +637,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="batchId"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -752,7 +649,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    onChange={() => handleChange(event)}
+                    name="course"
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -763,20 +661,10 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    onChange={() => handleChange(event)}
+                    name="students"
                     id=""
                     className="w-[103px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
-                  />
-                </div>
-                <div className="max-hamburger:w-[100%]">
-                  <p className="text-[#2C2E32] text-[14px] leading-[18.2px] mb-[10px]">
-                    Progress
-                  </p>
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className="w-[144px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
               </div>
@@ -787,7 +675,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="instructor1"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -798,7 +687,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="instructor2"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -809,7 +699,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="startDate"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[142px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -820,7 +711,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="endDate"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[142px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -836,7 +728,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="whatsapp"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -847,7 +740,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="github"
+                    onChange={() => handleChange(event)}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -859,20 +753,22 @@ export default function Jobs() {
             </h1>
             <div className="mb-[13px] bg-white pl-[19.08px] max-sm:flex-col max-sm:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[34px] max-sm:gap-[8px] items-center">
               <input
-                type="search"
+                type="text"
                 name=""
+                onChange={(e) => setsearchTermNewStudent(e.target.value)}
+                onClick={handleAddStudents}
                 className="w-[483px] max-sm:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                 placeholder="Search student name, instructor, batch ID"
                 id=""
               />
               <Image
-                src="/search.svg"
+                src="/images/search.svg"
                 className="cursor-pointer max-sm:right-[24px] max-sm:left-auto max-sm:top-[] max-sm:right-[30px] max-hamburger:right-[34px] max-hamburger:top-[27px] max-sm:top-[28px] absolute left-[467.88px]"
                 width={24}
                 height={24}
               />
             </div>
-            <div className="pb-[75px] h-[247px] overflow-scroll w-full bg-white rounded-[8px]">
+            <div className="pb-[75px] h-[533px] overflow-scroll w-full bg-white rounded-[8px]">
               <div className="flex fixed z-10 sticky top-0 bg-white items-center pl-[11.5px] h-[45px] border-b-[0.5px] min-w-[1109px] border-[#00000033]">
                 <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
                   Slno.
@@ -884,12 +780,34 @@ export default function Jobs() {
                   Course
                 </p>
                 <p className="text-[14px] leading-[16.8px] opacity-70 w-[] mr-[7px]">
-                  UIN | College | passing Year | Contact number | Email
+                  UIN | College | Passing Year
                 </p>
               </div>
+              {studentsData.map((student, index) => (
+                <div
+                  key={student._id}
+                  className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                >
+                  <div className="flex items-center">
+                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                      {index + 1}
+                    </p>
+                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                      {student.name}
+                    </p>
+                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                      {student.course}
+                    </p>
+                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[472px] mr-[7px]">
+                      {student._id.slice(0, 8)} | {student.college} |{" "}
+                      {student.yearOfPass}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
             <button
-              onClick={() => setactive("")}
+              onClick={() => handleSubmit(event)}
               className="h-[37px] w-[99px] mt-[28px] max-[500px]:w-full bg-black text-white rounded-[6px] text-[14px] leading-[16.8px]"
             >
               Add Batch
@@ -905,7 +823,7 @@ export default function Jobs() {
                     Filter by course
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
@@ -926,24 +844,22 @@ export default function Jobs() {
                     <div className="bg-white max-md:w-[calc(100%-80px)] rounded-[4px] max-sm:w-[calc(100%-40px)] absolute border-[1px] border-[#00000033] top-[103px] z-[22222] cursor-pointer">
                       <ul>
                         <li
-                          onClick={() => handleSelect("Doubt Clearing Session")}
+                          onClick={() => handleSelect("Full Stack Development")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Doubt Clearing Session
+                          Full Stack Development
                         </li>
                         <li
-                          onClick={() => handleSelect("Update Session")}
+                          onClick={() => handleSelect("Frontend Mastery")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Update Session
+                          Frontend Mastery
                         </li>
                         <li
-                          onClick={() =>
-                            handleSelect("Answer Revealing Session")
-                          }
+                          onClick={() => handleSelect("Backend Mastery")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] transition-all max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Answer Revealing Session
+                          Backend Mastery
                         </li>
                       </ul>
                     </div>
@@ -954,7 +870,7 @@ export default function Jobs() {
                     Filter by year
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
@@ -1013,7 +929,7 @@ export default function Jobs() {
                     Filter by month
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
@@ -1112,7 +1028,7 @@ export default function Jobs() {
               </div>
               <div className="flex max-[350px]:flex-col mt-[46.5px] gap-[12px]">
                 <button
-                  onClick={() => setfilter(false)}
+                  onClick={handleClearFilter}
                   className="bg-[white] h-[43px] text-black border-[1px] border-black px-[16px] py-[13px] rounded-[4px] text-[14px] leading-[16.8px]"
                 >
                   Clear filters
@@ -1126,8 +1042,117 @@ export default function Jobs() {
               </div>
             </div>{" "}
           </div>
-        )}
+        )}{" "}
+        {addStudents && (
+          <div
+            onMouseLeave={() => setAddStudents(false)}
+            className="absolute top-[665px] max-md:top-[1250px] z-[99] shadow-xl overflow-scroll rounded-[8px] bg-[white] w-[992px] h-[295px] max-xl:w-[calc(100%-120px)] max-md:w-[calc(100%-80px)] max-sm:w-[calc(100%-40px)]"
+          >
+            {searchTermNewStudent === ""
+              ? newStudentsData.map((student, index) => (
+                  <div
+                    key={student._id}
+                    className="flex items-center justify-between pl-[19.5px] pr-[28px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[992px]"
+                  >
+                    <div className="flex items-center">
+                      <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                        {student.name}
+                      </p>
+                      <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                        {student.course}
+                      </p>
+                      <p className="text-[14px] leading-[16.8px] opacity-70 w-[200px] mr-[53px]">
+                        {student._id.slice(0, 8)} | {student.college} |{" "}
+                        {student.yearOfPass}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleAddSelectedStudent(student._id)}
+                      className="w-[44px] h-[34px] text-[28px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                    >
+                      +{" "}
+                    </button>
+                  </div>
+                ))
+              : searchnewStudent.map((student, index) => (
+                  <div
+                    key={student._id}
+                    className="flex items-center justify-between pl-[19.5px] pr-[28px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[992px]"
+                  >
+                    <div className="flex items-center">
+                      <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                        {student.name}
+                      </p>
+                      <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                        {student.course}
+                      </p>
+                      <p className="text-[14px] leading-[16.8px] opacity-70 w-[200px] mr-[53px]">
+                        {student._id.slice(0, 8)} | {student.college} |{" "}
+                        {student.yearOfPass}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleAddSelectedStudent(student._id)}
+                      className="w-[44px] h-[34px] text-[28px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                    >
+                      +{" "}
+                    </button>
+                  </div>
+                ))}{" "}
+          </div>
+        )}{" "}
       </main>
     </>
   );
 }
+const Pagination = ({
+  BatchesPerPage,
+  totalBatches,
+  paginate,
+  currentPage,
+}) => {
+  const pageNumbers = [];
+  const totalPages = Math.ceil(totalBatches / BatchesPerPage);
+
+  if (totalPages > 1) {
+    if (currentPage > 2) pageNumbers.push(1);
+
+    if (currentPage > 3) pageNumbers.push("...");
+
+    if (currentPage > 1) pageNumbers.push(currentPage - 1);
+
+    pageNumbers.push(currentPage);
+
+    if (currentPage < totalPages) pageNumbers.push(currentPage + 1);
+
+    if (currentPage < totalPages - 2) pageNumbers.push("...");
+
+    if (currentPage < totalPages - 1) pageNumbers.push(totalPages);
+  }
+
+  return (
+    <div className="flex gap-[8px] max-smallerphone:gap-[6px]">
+      {pageNumbers.map((number, index) => (
+        <p
+          key={index}
+          className={`${
+            number === currentPage
+              ? "bg-black text-white"
+              : "bg-[transparent] text-black"
+          } text-[17.23px] max-smallphone:text-base cursor-pointer leading-[16px]`}
+        >
+          {number === "..." ? (
+            <span className="h-[23px] w-[32px] flex justify-center items-end">...</span>
+          ) : (
+            <span
+              className="w-[32px] h-[32px] flex items-center border-[1.23px] border-black max-smallphone:w-[30px] justify-center"
+              onClick={() => paginate(number)}
+            >
+              {number}
+            </span>
+          )}
+        </p>
+      ))}
+    </div>
+  );
+};

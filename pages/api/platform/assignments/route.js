@@ -2,34 +2,24 @@ import { connect } from "../../../lib/db";
 import Assignment from "../../../models/platform/Assignment";
 
 export default async function handler(req, res) {
-  const {
-    query: { id },
-    method,
-  } = req;
+  const { method } = req;
 
   await connect();
 
   switch (method) {
     case "GET":
       try {
-        const { date, title, description } = req.query;
+        const { batchId } = req.query;
         let assignments;
 
-        if (date && title && description) {
-          assignments = await Assignment.find({});
+        assignments = await Assignment.find({ batchId });
 
-          if (!assignments || assignments.length === 0) {
-            return res
-              .status(404)
-              .json({
-                success: false,
-                message: "No data available for the given date",
-              });
-          }
-        } else {
-          assignments = await Assignment.find({});
+        if (!assignments || assignments.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "No data available for the given date",
+          });
         }
-
         res.status(200).json({ success: true, data: assignments });
       } catch (error) {
         res.status(400).json({ success: false, error: error.message });
@@ -45,7 +35,9 @@ export default async function handler(req, res) {
         if (typeof assignmentData !== "object" || assignmentData === null) {
           throw new Error("Invalid assignment data format");
         }
+        const newAssignment = new Assignment(assignmentData);
 
+        await newAssignment.save();
         res.status(201).json({ success: true });
       } catch (error) {
         console.error("Error creating assignment:", error);

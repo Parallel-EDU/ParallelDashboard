@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import axios from "axios";
-import {toast} from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
 
 export default function forgotPass() {
   const router = useRouter();
@@ -23,37 +22,23 @@ export default function forgotPass() {
   const [cofirmpassword, setcofirmpassword] = useState("");
   const [samepassword, setsamepassword] = useState(true);
 
-
-
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
-    //const email = e.target.email.value;
-    
-
     try {
-      const response = await axios.post('/api/users/forgotPassword/route', { email });
+      const response = await axios.post("/api/users/forgotPassword/route", {
+        email,
+      });
       if (response.data.success) {
         toast.success(response.data.message);
-
-      }
-      else if(!user) {
-        router.push('/signup')
-
-      }
-      
-      else {
+      } else if (!user) {
+        router.push("/signup");
+      } else {
         toast.error(response.data.error);
       }
-
-
     } catch (error) {
-      toast.error('An error occurred. Please try again.');
+      toast.error("An error occurred. Please try again.");
     }
 
-
-
-
-    
     if (email === "") {
       setemailentered(true);
     }
@@ -73,8 +58,8 @@ export default function forgotPass() {
     e.preventDefault();
     if (newpassword !== cofirmpassword) {
       setsamepassword(false);
-    }else{
-        setstate('passwordupdated')
+    } else {
+      setstate("passwordupdated");
     }
   };
   return (
@@ -82,17 +67,19 @@ export default function forgotPass() {
       {state === "" && (
         <div className="w-[595px] max-md:w-full max-md:px-[40px] max-sm:px-[20px] max-md:w-full bg-[white] h-[100vh] flex flex-col justify-between pl-[40px] pb-[52.16px] pt-[118.42px] pr-[113px]">
           <div className="flex max-md:w-full w-[502.43px] flex-col gap-[28px]">
-            <Image
-              src="back.svg"
-              className="mt-[0.61px]"
-              width={44.97}
-              height={44.97}
-            />
+            <Link href={'/login'}>
+              <Image
+                src="/images/back.svg"
+                className="mt-[0.61px]"
+                width={44.97}
+                height={44.97}
+              />
+            </Link>
             <div className="absolute w-[calc(100%-40px)]  max-md:w-hidden z-[-1] top-0 h-full overflow-hidden">
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -114,7 +101,7 @@ export default function forgotPass() {
                   placeholder="Enter your email"
                   className="pl-[25.71px] w-[421px] max-md:w-full border-[1px] border-black rounded-[6px] pt-[21.5px] pb-[16.5px] text-base"
                 />
-              
+
                 <button
                   onClick={handleSubmitEmail}
                   className="w-[421px] py-[20px] max-md:w-full bg-[#30E29D] text-black font-semibold rounded-[6px] text-base"
@@ -137,7 +124,7 @@ export default function forgotPass() {
         <div className="w-[595px] max-md:w-full max-md:px-[40px] max-sm:px-[20px] max-md:w-full bg-[white] h-[100vh] flex flex-col justify-between pl-[40px] pb-[52.16px] pt-[118.42px] pr-[113px]">
           <div className="flex max-md:w-full w-[502.43px] flex-col gap-[28px]">
             <Image
-              src="back.svg"
+              src="/imagesback.svg"
               className="mt-[0.61px]"
               width={44.97}
               height={44.97}
@@ -146,7 +133,7 @@ export default function forgotPass() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/imageslogo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -154,7 +141,7 @@ export default function forgotPass() {
             <strong className="text-[25px] mb-[27px] leading-[30px]">
               Enter new password{" "}
             </strong>
-            
+
             <div className="flex flex-col relative gap-[32px]">
               {samepassword ? (
                 <p className="text-black text-[13px] left-[18px] bg-white top-[-15px] p-[8px] absolute leading-[15.6px]">
@@ -178,7 +165,7 @@ export default function forgotPass() {
               />
               {visiblenewpassword ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/imageseye-open.svg"
                   className="absolute cursor-pointer top-[22.13px] max-md:left-auto max-md:right-[20px] left-[378px]"
                   onClick={() => setvisiblenewpassword(!visiblenewpassword)}
                   width={24}
@@ -186,7 +173,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/imageseye.svg"
                   className="absolute cursor-pointer top-[22.13px] max-md:left-auto max-md:right-[20px] left-[378px]"
                   onClick={() => setvisiblenewpassword(!visiblenewpassword)}
                   width={24}
@@ -215,7 +202,7 @@ export default function forgotPass() {
               />
               {visibleconfirmpassword ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/imageseye-open.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() =>
                     setvisibleconfirmpassword(!visibleconfirmpassword)
@@ -225,7 +212,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/imageseye.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() =>
                     setvisibleconfirmpassword(!visibleconfirmpassword)
@@ -242,11 +229,7 @@ export default function forgotPass() {
               </button>
               {!samepassword && (
                 <div className="w-[421px] max-md:w-full pl-[11px] rounded-[3px] py-[16.5px] flex items-center gap-[11.65px] bg-[#FAEFE2]">
-                  <Image
-                    src="info-icon.svg"
-                    width={24}
-                    height={24}
-                  />{" "}
+                  <Image src="/imagesinfo-icon.svg" width={24} height={24} />{" "}
                   <p className="text-[#B72626] font-medium text-[13px] leading-[15.6px]">
                     The passwords entered do not match.
                   </p>
@@ -269,7 +252,7 @@ export default function forgotPass() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/imageslogo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -310,7 +293,7 @@ export default function forgotPass() {
               />
               {visible ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/imageseye-open.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() => setvisible(!visible)}
                   width={24}
@@ -318,7 +301,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/imageseye.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() => setvisible(!visible)}
                   width={24}
@@ -375,19 +358,19 @@ export default function forgotPass() {
       )}
       <div className="h-[100vh] w-full max-md:hidden relative overflow-hidden">
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}

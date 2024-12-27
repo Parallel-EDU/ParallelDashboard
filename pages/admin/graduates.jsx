@@ -1,47 +1,98 @@
 import Image from "next/image";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useState, useEffect } from "react";
 import AdminNavbar from "../../components/adminbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [sessionTime, setsessionTime] = useState(false);
-  const [remark, setRemark] = useState(false);
-  const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
-  const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
   const [filter, setfilter] = useState(false);
-  const [isOpenSession, setIsOpenSession] = useState(false);
-  const [itemSession, setItemSession] = useState("Select session type");
+  const [isOpen, setIsOpen] = useState(false);
+  const [item, setItem] = useState("Select Course");
   const [isOpenYear, setIsOpenYear] = useState(false);
   const [year, setyear] = useState("Select year");
   const [isOpenMonth, setIsOpenMonth] = useState(false);
   const [month, setmonth] = useState("Select month");
+  const [studentsData, setstudentsData] = useState([]);
+  const [selectedstudentsData, setselectedstudentsData] = useState([]);
+  const [searchTermStudent, setsearchTermStudent] = useState("");
+  const [searchStudent, setsearchStudent] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(10);
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = studentsData.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
+  const totalPages = Math.ceil(studentsData.length / studentsPerPage);
 
-  const handleSelectSession = (value) => {
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  useEffect(() => {
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/route?state=2`);
+      setstudentsData(res.data);
+    }
+    fetchstudents();
+  }, []);
+
+  useEffect(() => {
+    const results = studentsData.filter(
+      (student) =>
+        student.name?.toLowerCase().includes(searchTermStudent.toLowerCase()) ||
+        student.batchId
+          ?.toLowerCase()
+          .includes(searchTermStudent.toLowerCase()) ||
+        student.course?.toLowerCase().includes(searchTermStudent.toLowerCase())
+    );
+
+    setsearchStudent(results);
+  }, [searchTermStudent, studentsData]);
+  const handleSelect = (value) => {
     setItem(value);
     setIsOpen(false);
+    setsearchTermStudent(value);
+  };
+  const handleSelectStudent = (value) => {
+    setactive("view candidate details");
+    console.log(value);
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/${value}`);
+      setselectedstudentsData(res.data);
+    }
+    fetchstudents();
+  };
+
+  const handleClearFilter = () => {
+    setItem("Select Course");
+    setsearchTermStudent("");
+    setmonth("Select Month");
+    setyear("Select Year");
+    setfilter(false);
   };
   const handleSelectMonth = (value) => {
     setmonth(value);
     setIsOpenMonth(false);
+    setsearchTermStudent(value);
   };
   const handleSelectYear = (value) => {
     setyear(value);
     setIsOpenYear(false);
+    setsearchTermStudent(value);
   };
-  const handleSelect = (value) => {
-    setItem(value);
-    setIsOpen(false);
+  const handleReduce = () => {
+    if (currentPage === 1) {
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(currentPage - 1);
+    }
   };
-  const handleTimeSelect = (value) => {
-    setSessionTimeValue(value);
-    setsessionTime(false);
-  };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
+  const handleIncrease = () => {
+    if (currentPage === totalPages) {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage(currentPage + 1);
+    }
   };
   return (
     <>
@@ -51,14 +102,15 @@ export default function Jobs() {
           <>
             <div className="mb-[13px] bg-white pl-[19.08px] max-[500px]:flex-col max-sm:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[16px] max-sm:gap-[8px] items-center gap-[27.5px]">
               <input
-                type="search"
+                type="text"
+                onChange={(e) => setsearchTermStudent(e.target.value)}
                 name=""
                 className="w-[365px] max-[500px]:pr-[40px] max-sm:w-[310px] max-[500px]:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] max-sm:pr-0 border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                 placeholder="Search by student name, PAN number"
                 id=""
               />
               <Image
-                src="/search.svg"
+                src="/images/search.svg"
                 className="cursor-pointer max-[500px]:left-auto max-[500px]:right-[34px] max-sm:left-[290px] max-hamburger:top-[27px] max-sm:top-[27px] absolute left-[347.88px]"
                 width={24}
                 height={24}
@@ -67,7 +119,7 @@ export default function Jobs() {
                 onClick={() => setfilter(true)}
                 className="cursor-pointer h-[44px] border-[1px] px-[16px] border-[black] rounded-[9px] py-[13px] flex gap-[8px]"
               >
-                <Image src="/filter-fill.svg" width={18} height={18} />
+                <Image src="/images/filter-fill.svg" width={18} height={18} />
                 <p className="text-[14px] leading-[16.94px]">Filter by</p>
               </div>
             </div>
@@ -86,259 +138,93 @@ export default function Jobs() {
                   Current Location | College | passing Year
                 </p>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    01
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    02
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    03
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    04
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    05
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    06
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    07
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    08
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    09
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1139px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    10
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    Vitae facilisis in sit integer. A mauris ac.
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
-                    No-code, Low-code Development
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[280px]">
-                    Bangalore | JSSIT | 2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("view candidate details")}
-                  className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Details{" "}
-                </button>
-              </div>
+              {searchTermStudent === ""
+                ? currentStudents.map((student, index) => (
+                    <div
+                      key={student._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {student.name}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
+                          {student.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[236px]">
+                          {student._id.slice(0, 8)} | {student.college} |{" "}
+                          {student.yearOfPass}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelectStudent(student._id)}
+                        className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Details{" "}
+                      </button>
+                    </div>
+                  ))
+                : searchStudent.map((student, index) => (
+                    <div
+                      key={student._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {student.name}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[40px]">
+                          {student.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[236px]">
+                          {student._id.slice(0, 8)} | {student.college} |{" "}
+                          {student.yearOfPass}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelectStudent(student._id)}
+                        className="w-[111px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Details{" "}
+                      </button>
+                    </div>
+                  ))}
             </div>
-            <div className="flex gap-[16px] max-smallerphone:gap-[8px] max-lg:relative max-lg:top-0 max-lg:mt-[30px] max-lg:left-[0] max-sm:left-[0] absolute right-[60px] bottom-[31px]">
-              <div className="w-[32px] h-[32px] flex max-smallerphone:pr-0 pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                <Image src="/Group 4.svg" width={14.13} height={14.13} />
+            {searchTermStudent === "" && totalPages !== 1 && (
+              <div className="pagination flex gap-[16px] max-smallerphone:gap-[8px] max-lg:relative max-lg:top-0 max-lg:mt-[30px] max-lg:left-[0px] max-sm:left-[0px] absolute right-[60px] bottom-[31px]">
+                <div
+                  onClick={handleReduce}
+                  className="w-[32px] h-[32px] flex max-smallerphone:pr-0 pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer"
+                >
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                </div>
+                <Pagination
+                  studentsPerPage={studentsPerPage}
+                  totalStudents={studentsData.length}
+                  paginate={paginate}
+                  currentPage={currentPage}
+                />
+                <div
+                  onClick={handleIncrease}
+                  className="w-[32px] rotate-180 h-[32px] max-smallphone:pr-0 flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer"
+                >
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                </div>
               </div>
-              <div className="flex gap-[8px] max-smallerphone:gap-[6px]">
-                <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] max-smallphone:text-base cursor-pointer bg-black leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#000000] text-white">
-                  1
-                </p>
-                <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                  2
-                </p>
-                <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                  3
-                </p>
-                <p className="w-[25px] max-smallphone:w-[20px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer">
-                  ...
-                </p>
-                <p className="w-[32px] max-smallphone:w-[30px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] max-smallphone:text-base cursor-pointer">
-                  42
-                </p>
-              </div>
-              <div className="w-[32px] rotate-180 h-[32px] max-smallphone:pr-0 flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                <Image src="/Group 4.svg" width={14.13} height={14.13} />
-              </div>
-            </div>
+            )}
           </>
         )}
         {active === "view candidate details" && (
           <div className="flex flex-col items-center">
             <div className="mb-[21.5px] w-full flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -359,6 +245,7 @@ export default function Jobs() {
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">Name</p>
                   <input
                     type="text"
+                    value={selectedstudentsData.name}
                     name=""
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -370,6 +257,7 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
+                    value={selectedstudentsData._id}
                     name=""
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -385,6 +273,7 @@ export default function Jobs() {
                     type="text"
                     name=""
                     id=""
+                    value={selectedstudentsData.batchId}
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
@@ -395,6 +284,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedstudentsData.dateOfBirth}
                     id=""
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -408,6 +298,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedstudentsData.course}
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -419,6 +310,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedstudentsData.createdAt}
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -443,6 +335,7 @@ export default function Jobs() {
                   <input
                     type="text"
                     name=""
+                    value={selectedstudentsData.email}
                     id=""
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -455,6 +348,7 @@ export default function Jobs() {
                     type="text"
                     name=""
                     id=""
+                    value={selectedstudentsData.phoneNumber}
                     className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                 </div>
@@ -469,6 +363,7 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
+                    value={selectedstudentsData.course}
                     name=""
                     id=""
                     className="w-[309px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -570,7 +465,7 @@ export default function Jobs() {
               <div className="flex gap-[33px] max-sm:flex-col max-hamburger:gap-[20px] mt-[18px] mb-[24px]">
                 <div className="max-hamburger:w-[100%] relative">
                   <Image
-                    src="/edit.svg"
+                    src="/images/edit.svg"
                     className="absolute bottom-[11px] right-[13.48px]"
                     width={18}
                     height={18}
@@ -588,7 +483,7 @@ export default function Jobs() {
                 </div>
                 <div className="max-hamburger:w-[100%] relative">
                   <Image
-                    src="/edit.svg"
+                    src="/images/edit.svg"
                     className="absolute bottom-[11px] right-[13.48px]"
                     width={18}
                     height={18}
@@ -607,7 +502,7 @@ export default function Jobs() {
               <div className="flex items-end max-hamburger:items-start max-hamburger:flex-col gap-[33px]">
                 <div className="max-hamburger:w-[100%] relative">
                   <Image
-                    src="/edit.svg"
+                    src="/images/edit.svg"
                     className="absolute bottom-[11px] right-[13.48px]"
                     width={18}
                     height={18}
@@ -626,7 +521,7 @@ export default function Jobs() {
               <div className="flex gap-[33px] max-sm:flex-col max-hamburger:gap-[20px] mt-[18px] mb-[24px]">
                 <div className="max-hamburger:w-[100%] relative">
                   <Image
-                    src="/edit.svg"
+                    src="/images/edit.svg"
                     className="absolute bottom-[11px] right-[13.48px]"
                     width={18}
                     height={18}
@@ -643,7 +538,7 @@ export default function Jobs() {
                 </div>
                 <div className="max-hamburger:w-[100%] relative">
                   <Image
-                    src="/edit.svg"
+                    src="/images/edit.svg"
                     className="absolute bottom-[11px] right-[13.48px]"
                     width={18}
                     height={18}
@@ -821,29 +716,29 @@ export default function Jobs() {
                 </button>
               </div>
 
-              <div className="flex gap-[16px] absolute right-[38px] bottom-[37px]">
+              {/* <div className="flex gap-[16px] absolute right-[38px] bottom-[37px]">
                 <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
-                </div>
-                <div className="flex gap-[8px]">
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                  </div>
+                  <div className="flex gap-[8px]">
                   <p className="w-[32px] text-[17.23px] cursor-pointer bg-[#000] text-white leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#000]">
-                    1
+                  1
                   </p>
                   <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                    2
+                  2
                   </p>
                   <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
                     3
-                  </p>
-                  <p className="w-[25px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer"></p>
-                  <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
+                    </p>
+                    <p className="w-[25px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center cursor-pointer"></p>
+                    <p className="w-[32px] text-[17.23px] leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
                     42
-                  </p>
-                </div>
-                <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
-                </div>
-              </div>
+                    </p>
+                    </div>
+                    <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
+                    <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
+                    </div>
+                    </div> */}
             </div>
             <h1 className="text-center mt-[32px] text-[20px] leading-[26px] font-semibold">
               Graduate Profile
@@ -851,7 +746,7 @@ export default function Jobs() {
             <div className="w-[874px] mt-[22px] max-hamburger:w-full max-sm:px-[20px] max-hamburger:w-full py-[24px] pl-[25px] max-hamburger:px-[25px] bg-white rounded-[5px]">
               <div className="flex gap-[18px] max-sm:flex-col max-sm:gap-[17px] mb-[17px]">
                 <div className="w-[210px] max-smallerphone:w-full h-[252px] max-md:px-[12px] max-md:justify-center max-md:items-center max-md:py-[17px] max-md:h-auto pl-[34px] flex flex-col justify-center rounded-[14px] border-[1px] border-[#D8D8D8]">
-                  <Image src="/profile.png" width={147.1} height={147.1} />
+                  <Image src="/images/profile.png" width={147.1} height={147.1} />
                 </div>
                 <div className="w-[588px] max-sm:w-full max-md:py-[17px] max-md:h-auto max-hamburger:px-[18px] max-hamburger:w-[calc(100%-210px)] h-[252px] relative pl-[28px] pt-[17.08px] rounded-[14px] border-[1px] border-[#D8D8D8]">
                   <h1 className="text-[16px] leading-[20.8px] font-bold mb-[31.92px]">
@@ -865,7 +760,7 @@ export default function Jobs() {
                       type="text"
                       name=""
                       id=""
-                      value={"Candidate name"}
+                      value={selectedstudentsData.name}
                       className="w-[250px] text-[14px] leading-[16.8px] max-md:w-[100%] pl-[15.71px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
                     />
                   </div>
@@ -878,9 +773,9 @@ export default function Jobs() {
                         type="text"
                         name=""
                         id=""
-                        value={"candidate@gmail.com"}
+                        value={selectedstudentsData.email}
                         className="w-[250px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] pl-[15.71px] max-hamburger:pl-[6.51px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
-                      />
+                        />
                     </div>
                     <div>
                       <p className="text-[14px] leading-[16.8px] mb-[8px]">
@@ -890,7 +785,7 @@ export default function Jobs() {
                         type="text"
                         name=""
                         id=""
-                        value={"+91 97307 3287"}
+                        value={selectedstudentsData.phoneNumber}
                         className="w-[250px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] max-hamburger:pl-[6.51px] pl-[15.71px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
                       />
                     </div>
@@ -909,7 +804,7 @@ export default function Jobs() {
                         name=""
                         id=""
                         className="w-[166px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
-                      />
+                        />
                     </div>
                     <div className="max-sm:w-full gap-[12px] max-">
                       <p className="text-[14px] leading-[15.4px] mb-[10px] text-[#2C2E32]">
@@ -939,10 +834,10 @@ export default function Jobs() {
                         name=""
                         id=""
                         className="w-[142px] bg-[#F6F6F6] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] border-[0.5px] border-[#00000080]"
-                      />
+                        />
                       <div className="flex justify-center items-center border-[0.5px] border-[#00000080] rounded-[4px] h-[40px] w-[51px]">
                         <Image
-                          src="/download.svg"
+                          src="/images/download.svg"
                           className="cursor-pointer"
                           width={24}
                           height={24}
@@ -960,14 +855,14 @@ export default function Jobs() {
                         name=""
                         id=""
                         className="w-[142px] bg-[#F6F6F6] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] border-[0.5px] border-[#00000080]"
-                      />
+                        />
                       <div className="flex justify-center items-center border-[0.5px] border-[#00000080] rounded-[4px] h-[40px] w-[51px]">
                         <Image
-                          src="/download.svg"
+                          src="/images/download.svg"
                           className="cursor-pointer"
                           width={24}
                           height={24}
-                        />
+                          />
                       </div>
                     </div>
                   </div>
@@ -1012,7 +907,7 @@ export default function Jobs() {
                       name=""
                       id=""
                       className="w-[216px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[0.5px] border-[#00000080]"
-                    />
+                      />
                   </div>
                   <div>
                     <p className="text-[14px] leading-[16.8px] mb-[10px]">
@@ -1050,45 +945,43 @@ export default function Jobs() {
                     Filter by course
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
-                      isOpenSession
+                      isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
                         : "absolute right-[20.5px] max-md:right-[20px] cursor-pointer top-[65.5px]"
                     }
                     width={15}
                     height={8.55}
-                    onClick={() => setIsOpenSession(!isOpenSession)}
+                    onClick={() => setIsOpen(!isOpen)}
                   />
                   <div
-                    onClick={() => setIsOpenSession(!isOpenSession)}
+                    onClick={() => setIsOpen(!isOpen)}
                     className="pl-[23.5px] max-sm:w-full h-[68px] bg-white cursor-pointer w-[333px] border-[1px] border-[#00000033] rounded-[6px] py-[22px] text-[20px] leading-[24px]"
                   >
                     {" "}
-                    {itemSession}
+                    {item}
                   </div>{" "}
-                  {isOpenSession && (
+                  {isOpen && (
                     <div className="bg-white max-md:w-[calc(100%-80px)] rounded-[4px] max-sm:w-[calc(100%-40px)] absolute border-[1px] border-[#00000033] top-[103px] z-[22222] cursor-pointer">
                       <ul>
                         <li
-                          onClick={() => handleSelectSession("Doubt Clearing Session")}
+                          onClick={() => handleSelect("Full Stack Development")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Doubt Clearing Session
+                          Full Stack Development
                         </li>
                         <li
-                          onClick={() => handleSelectSession("Update Session")}
+                          onClick={() => handleSelect("Frontend Mastery")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Update Session
+                          Frontend Mastery
                         </li>
                         <li
-                          onClick={() =>
-                            handleSelectSession("Answer Revealing Session")
-                          }
+                          onClick={() => handleSelect("Backend Mastery")}
                           className="pl-[23.5px] w-[330px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] transition-all max-md:w-full cursor-pointer py-[22px] text-[20px] leading-[24px]"
                         >
-                          Answer Revealing Session
+                          Backend Mastery
                         </li>
                       </ul>
                     </div>
@@ -1099,7 +992,7 @@ export default function Jobs() {
                     Filter by year
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
@@ -1158,7 +1051,7 @@ export default function Jobs() {
                     Filter by month
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[20px] right-[20.5px] cursor-pointer top-[65.5px]"
@@ -1257,7 +1150,7 @@ export default function Jobs() {
               </div>
               <div className="flex max-[350px]:flex-col mt-[46.5px] gap-[12px]">
                 <button
-                  onClick={() => setfilter(false)}
+                  onClick={handleClearFilter}
                   className="bg-[white] h-[43px] text-black border-[1px] border-black px-[16px] py-[13px] rounded-[4px] text-[14px] leading-[16.8px]"
                 >
                   Clear filters
@@ -1276,3 +1169,56 @@ export default function Jobs() {
     </>
   );
 }
+const Pagination = ({
+  studentsPerPage,
+  totalStudents,
+  paginate,
+  currentPage,
+}) => {
+  const pageNumbers = [];
+  const totalPages = Math.ceil(totalStudents / studentsPerPage);
+
+  if (totalPages > 1) {
+    if (currentPage > 2) pageNumbers.push(1);
+
+    if (currentPage > 3) pageNumbers.push("...");
+
+    if (currentPage > 1) pageNumbers.push(currentPage - 1);
+
+    pageNumbers.push(currentPage);
+
+    if (currentPage < totalPages) pageNumbers.push(currentPage + 1);
+
+    if (currentPage < totalPages - 2) pageNumbers.push("...");
+
+    if (currentPage < totalPages - 1) pageNumbers.push(totalPages);
+  }
+
+  return (
+    <div className="flex gap-[8px] max-smallerphone:gap-[6px]">
+      {pageNumbers.map((number, index) => (
+        <p
+          key={index}
+          className={`${
+            number === currentPage
+              ? "bg-black text-white"
+              : "bg-[transparent] text-black"
+          } text-[17.23px] max-smallphone:text-base cursor-pointer leading-[16px]`}
+        >
+          {number === "..." ? (
+            <span className="h-[23px] w-[32px] flex justify-center items-end">
+              ...
+            </span>
+          ) : (
+            <span
+              className="w-[32px] h-[32px] flex items-center border-[1.23px] border-black max-smallphone:w-[30px] justify-center"
+              onClick={() => paginate(number)}
+            >
+              {number}
+            </span>
+          )}
+        </p>
+      ))}
+    </div>
+  );
+};

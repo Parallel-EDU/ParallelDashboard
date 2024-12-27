@@ -1,25 +1,28 @@
 import { connect } from "../../../lib/db";
-import Class from "../../../models/platform/Class";
-import Assignment from "../../../models/platform/Assignment";
+import Assignment from "../../../models/trainer/submittedAssignments";
 
 export default async function handler(req, res) {
-  const {
-    query: { id },
-    method,
-  } = req;
+  const { method } = req;
 
   await connect();
 
   switch (method) {
     case "GET":
       try {
-        const classObj = await Assignment.find({});
-        if (!classObj) {
-          return res.status(400).json({ success: false });
+        const { SID } = req.query;
+        let assignments;
+
+        assignments = await Assignment.find({ SID });
+
+        if (!assignments || assignments.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "No data available for the given date",
+          });
         }
-        res.status(200).json({ success: true, data: classObj });
+        res.status(200).json({ success: true, data: assignments });
       } catch (error) {
-        res.status(400).json({ success: false });
+        res.status(400).json({ success: false, error: error.message });
       }
       break;
 
@@ -32,7 +35,9 @@ export default async function handler(req, res) {
         if (typeof assignmentData !== "object" || assignmentData === null) {
           throw new Error("Invalid assignment data format");
         }
+        const newAssignment = new Assignment(assignmentData);
 
+        await newAssignment.save();
         res.status(201).json({ success: true });
       } catch (error) {
         console.error("Error creating assignment:", error);

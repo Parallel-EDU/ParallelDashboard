@@ -50,7 +50,7 @@ export default function Jobs() {
               <div className="bg-[#F0DEC9] justify-between max-hamburger:mb-[50px] max-[500px]:flex-col max-[500px]:h-auto max-hamburger:static max-hamburger:w-full items-start absolute right-[60px] rounded-[7px] py-[14.96px] pl-[15px] pr-[19px] flex gap-[17px] h-[73px] w-[588px] max-[1170px]:w-[500px] top-[153.93px]">
                 <div className="flex items-center gap-[17px]">
                   <Image
-                    src="/info.svg"
+                    src="/images/info.svg"
                     className="mt-[0.54px]"
                     width={28.71}
                     height={28.71}
@@ -439,7 +439,7 @@ export default function Jobs() {
               </div>
               <div className="flex gap-[16px] max-smallphone:gap-[8px] max-smallphone:relative max-smallphone:right-0 max-smallphone:top-[35px] absolute right-[38px] bottom-[37px]">
                 <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
                 </div>
                 <div className="flex gap-[8px] max-smallphone:gap-[6px]">
                   <p className="w-[32px] text-[17.23px] cursor-pointer bg-[#000] text-white leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#000]">
@@ -459,7 +459,7 @@ export default function Jobs() {
                   </p>
                 </div>
                 <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
                 </div>
               </div>
             </div>
@@ -467,7 +467,7 @@ export default function Jobs() {
               <>
                 <div className="bg-white fixed pr-[25.59px] pt-[37.29px] pl-[38px] z-30 max-sm:shadow-md items-center max-sm:top-[120px] top-[150px] shadow-2xl rounded-[8px] left-[22.15%] max-hamburger:w-[80%] max-hamburger:left-[10%] max-md:w-[96%] max-md:left-[2%] h-[439px] w-[55.7%]">
                   <Image
-                    src="/Vector (2).svg"
+                    src="/images/Vector (2).svg"
                     className="absolute max-md:right-[40px] max-sm:right-[5%] right-[36.12px] max-smallerphone:top-[20px] cursor-pointer top-[37.29px]"
                     width={23.35}
                     onClick={() => setapplynow(false)}
@@ -503,7 +503,7 @@ export default function Jobs() {
                     <div className="w-[356px] h-[117px] rounded-[7px] bg-[#F0DEC9] rounded-[7px] pt-[18px] pl-[15px] pr-[12.15px]">
                       <div className="flex items-center mb-[16.5px]">
                         <Image
-                          src="/info.svg"
+                          src="/images/info.svg"
                           width={24}
                           height={24}
                           className="mr-[9px]"
@@ -546,13 +546,13 @@ export default function Jobs() {
               <>
                 <div className="bg-white fixed flex flex-col justify-center z-30 max-sm:shadow-md items-center max-sm:top-[120px] top-[150px] shadow-2xl rounded-[8px] left-[22.15%] max-hamburger:w-[80%] max-hamburger:left-[10%] max-md:w-[96%] max-md:left-[2%] h-[439px] w-[55.7%]">
                   <Image
-                    src="/Vector (2).svg"
+                    src="/images/Vector (2).svg"
                     className="absolute max-md:right-[40px] max-sm:right-[5%] right-[36.12px] max-smallerphone:top-[20px] cursor-pointer top-[37.29px]"
                     width={23.35}
                     onClick={() => setapply(false)}
                     height={23.35}
                   />
-                  <Image src="/Frame 18.svg" width={85.48} height={85.48} />{" "}
+                  <Image src="/images/Frame 18.svg" width={85.48} height={85.48} />{" "}
                   <p className="text-[16px] mt-[20px] text-center leading-[20.64px]">
                     Your application for{" "}
                   </p>
@@ -590,7 +590,7 @@ export default function Jobs() {
             </div>{" "}
             {progress && (
               <div className="bg-[#F0DEC9] items-start absolute right-[60px] rounded-[7px] py-[15.5px] pl-[15px] pr-[35.71px] flex gap-[17px] h-[73px] w-[538px] max-lg:w-[470px] max-hamburger:static max-hamburger:w-full max-hamburger:mb-[50px] max-hamburger:h-auto max-hamburger:items-center max-sm:items-start max-lg:gap-[7px] max-lg:px-[15px] top-[153.93px]">
-                <Image src="/info.svg" width={28.71} height={28.71} />
+                <Image src="/images/info.svg" width={28.71} height={28.71} />
                 <p className="text-[14px] capitalize leading-[21px] font-bold text-[#970B0B]">
                   Your profile is under review. Please allow us up to 48 hours.
                   you will receive an email once the review is finished.
@@ -910,7 +910,7 @@ export default function Jobs() {
               </div>
               <div className="flex gap-[16px] absolute right-[38px] bottom-[37px]">
                 <div className="w-[32px] h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
                 </div>
                 <div className="flex gap-[8px]">
                   <p className="w-[32px] text-[17.23px] cursor-pointer bg-[#000] text-white leading-[16px] h-[32px] flex justify-center items-center border-[1.23px] border-[#000]">
@@ -928,7 +928,7 @@ export default function Jobs() {
                   </p>
                 </div>
                 <div className="w-[32px] rotate-180 h-[32px] flex pr-[2.98px] justify-center items-center border-[1.23px] border-[#00000033] cursor-pointer">
-                  <Image src="/Group 4.svg" width={14.13} height={14.13} />
+                  <Image src="/images/Group 4.svg" width={14.13} height={14.13} />
                 </div>
               </div>
             </div>{" "}

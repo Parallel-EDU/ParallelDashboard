@@ -1,10 +1,9 @@
-"use client"
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast"
+import { toast } from "react-hot-toast";
 
 export default function Login() {
   const router = useRouter();
@@ -15,31 +14,22 @@ export default function Login() {
   const [password, setpassword] = useState("");
   const [invalidPassword, setInvalidPassword] = useState(false);
 
-
-
   const handleSubmit = async (e) => {
-
     try {
-      const response = await axios.post('/api/users/login/route', { email, password })
-      console.log(response);
+      const response = await axios.post("/api/users/login/route", {
+        email,
+        password,
+      });
 
       if (response.data.success) {
-        console.log("login success", response.data);
-        router.push('/onboarding');
-
-      }
-      else {
+        fetchTokenData();
+      } else {
         console.log("login failed", response.error);
-
       }
-      
-      
-
-
     } catch (error) {
       console.log("Incorrect password", error.message);
       setInvalidPassword(true);
-      toast.error(error.message)
+      toast.error(error.message);
     }
     e.preventDefault();
     if (email === "") {
@@ -47,6 +37,33 @@ export default function Login() {
     }
     if (password === "") {
       setpasswordentered(true);
+    }
+  };
+
+  const fetchTokenData = async () => {
+    try {
+      const response = await axios.get(`/api/cookies`);
+      const email = response.data.email;
+      const SID = response.data.id;
+      try {
+        const response = await fetch(`/api/onboarding/personalInfo/update`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, SID }),
+        });
+
+        if (response.ok) {
+          router.push("/class");
+        } else {
+          console.log("Failed to update");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
   };
   return (
@@ -63,7 +80,7 @@ export default function Login() {
             <div className="radical-circle"></div>
           </div>
           <Image
-            src="logo.svg"
+            src="/images/logo.svg"
             className="absolute top-[43.13px]"
             width={127.79}
             height={24}
@@ -108,7 +125,7 @@ export default function Login() {
                 />
                 {visible ? (
                   <Image
-                    src="eye-open.svg"
+                    src="/images/eye-open.svg"
                     className="absolute cursor-pointer top-[118.13px] max-md:right-[20px] max-md:left-auto left-[378px]"
                     onClick={() => setvisible(!visible)}
                     width={24}
@@ -116,7 +133,7 @@ export default function Login() {
                   />
                 ) : (
                   <Image
-                    src="eye.svg"
+                    src="/images/eye.svg"
                     className="absolute cursor-pointer top-[118.13px] max-md:right-[20px] max-md:left-auto left-[378px]"
                     onClick={() => setvisible(!visible)}
                     width={24}
@@ -193,19 +210,19 @@ export default function Login() {
       </div>
       <div className="h-[100vh] w-full max-md:hidden relative overflow-hidden">
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}

@@ -1,10 +1,12 @@
 import Navbar from "../components/navbar";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export default function Profile() {
+  const router = useRouter();
   const [Name, setName] = useState("");
   const [phonenumber, setPhonenumber] = useState("");
   const [userName, setUserName] = useState("");
@@ -26,47 +28,48 @@ export default function Profile() {
   const [selectedYear, setSelectedYear] = useState("");
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 50 }, (_, index) => currentYear - index);
-  const [isPassingOpen, setIsPassingOpen] = useState(false);
   const [selectedPassingYear, setSelectedPassingYear] = useState("");
-  const passingYears = Array.from(
-    { length: 50 },
-    (_, index) => currentYear - index
-  );
+  const [userData, setUserData] = useState(null);
+
+  const [tokenId, settokenId] = useState(null);
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        const response = await axios.get(`/api/cookies`);
+        settokenId(response.data.id);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchTokenData();
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (!tokenId) {
+      console.error("TokenId is not defined");
+      return;
+    }
+
+    const fetchUserData = async () => {
       try {
-        const response = await axios.get("/api/platform/account/route");
+        const response = await axios.get(`/api/onboarding/personalInfo/route`);
         const data = response.data;
-        if (data.length > 0) {
-          const lastData = data[data.length - 1];
-          setPhonenumber(lastData.phonenumber);
-          setName(lastData.Name);
-          setUserName(lastData.userName);
-          setCollege(lastData.College);
-          setAllLocation(lastData.allLocation);
-          setRemote(lastData.remote);
-          setBangalore(lastData.bangalore);
-          setHyderabad(lastData.hyderabad);
-          setChennai(lastData.chennai);
-          setDelhi(lastData.delhi);
-          setMumbai(lastData.mumbai);
-          setGurgaon(lastData.gurgaon);
-          setAhmedabad(lastData.ahmedabad);
-          setNoida(lastData.noida);
-          setPune(lastData.pune);
-          setNashik(lastData.nashik);
-          setChattisgarh(lastData.chattisgarh);
-          setSelectedYear(lastData.selectedYear);
-          setSelectedPassingYear(lastData.selectedPassingYear);
-        }
+        const results = data.filter((student) => student.SID === tokenId);
+        setUserData(results[0]);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchUserData();
+  }, [tokenId]);
+  const handleLogout = async () => {
+    const res = await fetch("/api/admin/logout", { method: "POST" });
+
+    if (res.ok) {
+      router.push("/login");
+    }
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -100,21 +103,6 @@ export default function Profile() {
       console.error("Error sending data:", error);
     }
   }
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-  const togglePassingMenu = () => {
-    setIsPassingOpen(!isPassingOpen);
-  };
-
-  const handleYearSelect = (year) => {
-    setSelectedYear(year);
-    setIsOpen(false);
-  };
-  const handlePassingYearSelect = (passingyear) => {
-    setSelectedPassingYear(passingyear);
-    setIsPassingOpen(false);
-  };
   return (
     <>
       <Navbar />
@@ -133,10 +121,11 @@ export default function Profile() {
                 type="text"
                 name=""
                 id=""
+                value={userData? userData.name : ''}
                 onChange={(e) => setName(e.target.value)}
                 disabled
                 className="w-[309px] bg-[#EDEDED] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] border-[1px] border-[#00000080]"
-              />
+                />
             </div>
             <div className="max-hamburger:w-[100%]">
               <p className="text-[14px] leading-[18.2px] mb-[10px]">SID</p>
@@ -146,8 +135,9 @@ export default function Profile() {
                 id=""
                 onChange={(e) => setUserName(e.target.value)}
                 disabled
+                value={userData? userData.SID : ''}
                 className="w-[309px] bg-[#EDEDED] border-[#00000080] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[1px] border-black"
-              />
+                />
             </div>
             <div className="max-hamburger:w-[100%]">
               <p className="text-[14px] leading-[18.2px] mb-[10px]">Email</p>
@@ -156,25 +146,26 @@ export default function Profile() {
                 name=""
                 id=""
                 onChange={(e) => setUserName(e.target.value)}
+                value={userData? userData.email : ''}
                 disabled
                 className="w-[309px] bg-[#EDEDED] border-[#00000080] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[1px] border-black"
-              />
+                />
             </div>
           </div>
           <div className="flex items-end max-hamburger:items-start max-hamburger:flex-col gap-[33px]">
             <div className="max-hamburger:w-full relative">
               <p className="text-[14px] leading-[15px] mb-[10px]">Password</p>
               <Image
-                src="edit.svg"
+                src="/images/edit.svg"
                 className="mt-[0.61px] absolute top-[35px] right-[14.67px] cursor-pointer"
                 width={18.83}
                 height={18.83}
-              />{" "}
+                />{" "}
               <input
                 type="password"
                 name=""
                 id=""
-                onChange={(e) => setCollege(e.target.value)}
+                value={userData? userData.password : ''}
                 className="w-[309px] max-hamburger:w-full pl-[15.71px] rounded-[4px] h-[40px] bg-[white] border-[1px] border-black"
               />
             </div>
@@ -188,7 +179,10 @@ export default function Profile() {
             <h1 className="capitalize text-[20px] leading-[26px] font-semibold">
               Job preferences{" "}
             </h1>
-            <Link href={'/placement-profile'} className="border-[1px] max-sm:hidden w-[206px] h-[41px] text-[14px] border-black py-[12px] px-[19px] rounded-[4px] cursor-pointer">
+            <Link
+              href={"/placement-profile"}
+              className="border-[1px] max-sm:hidden w-[206px] h-[41px] text-[14px] border-black py-[12px] px-[19px] rounded-[4px] cursor-pointer"
+            >
               Update Placement Profile
             </Link>
           </div>
@@ -367,38 +361,42 @@ export default function Profile() {
           </div>
           <div className="max-lg:overflow-scroll">
             <table className="max-[850px]:w-[640px]">
-              <tr className="bg-[#D3D3D3]">
-                <td className="text-base w-[142px] pl-[25px] py-[16px]">
-                  Date
-                </td>
-                <td className="text-base w-[218px] pl-[25px] py-[16px]">
-                  Payment number
-                </td>
-                <td className="text-base w-[184px] pl-[25px] py-[16px]">
-                  Payment method
-                </td>
-                <td className="text-base w-[196px] pl-[25px] py-[16px]">
-                  Amount
-                </td>
-              </tr>
-              <tr className="border-b-[0.2px] border-[#00000080]">
-                <td className="text-base text-[#1D1D1D] w-[142px] pl-[25px] py-[16px]">
-                  28/08/23
-                </td>
-                <td className="text-base text-[#1D1D1D] w-[218px] pl-[25px] py-[16px]">
-                  947u60749862766
-                </td>
-                <td className="text-base text-[#1D1D1D] w-[184px] pl-[25px] py-[16px]">
-                  Credit Card
-                </td>
-                <td className="text-base text-[#1D1D1D] w-[196px] pl-[25px] py-[16px]">
-                  INR 5,000
-                </td>
-              </tr>
+              <thead>
+                <tr className="bg-[#D3D3D3]">
+                  <td className="text-base w-[142px] pl-[25px] py-[16px]">
+                    Date
+                  </td>
+                  <td className="text-base w-[218px] pl-[25px] py-[16px]">
+                    Payment number
+                  </td>
+                  <td className="text-base w-[184px] pl-[25px] py-[16px]">
+                    Payment method
+                  </td>
+                  <td className="text-base w-[196px] pl-[25px] py-[16px]">
+                    Amount
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b-[0.2px] border-[#00000080]">
+                  <td className="text-base text-[#1D1D1D] w-[142px] pl-[25px] py-[16px]">
+                    28/08/23
+                  </td>
+                  <td className="text-base text-[#1D1D1D] w-[218px] pl-[25px] py-[16px]">
+                    947u60749862766
+                  </td>
+                  <td className="text-base text-[#1D1D1D] w-[184px] pl-[25px] py-[16px]">
+                    Credit Card
+                  </td>
+                  <td className="text-base text-[#1D1D1D] w-[196px] pl-[25px] py-[16px]">
+                    INR 5,000
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
-        <button className="w-[96px] font-semibold h-[43px] max-sm:w-full mt-[41px] bg-[#30E29D] rounded-[6px] text-[16px] leading-[19.2px]">
+        <button onClick={handleLogout} className="w-[96px] font-semibold h-[43px] max-sm:w-full mt-[41px] bg-[#30E29D] rounded-[6px] text-[16px] leading-[19.2px]">
           Log out{" "}
         </button>
         <section className="w-[1097px] mt-[54px] max-sm:px-[20px] max-xl:w-full mt-[25px] pt-[25.4px] border-[2px] border-[#672B094D] rounded-[6px] pb-[36px] pl-[22.32px] h-[131px] bg-[#FFEAC9]">

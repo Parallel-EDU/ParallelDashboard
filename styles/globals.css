@@ -90,7 +90,7 @@ input[type="number"] {
 }
 @font-face {
   font-family: Graphik;
-  src: url("../public/GraphikRegular.woff2");
+  src: url("../public/images/GraphikRegular.woff2");
 }
 @media (prefers-color-scheme: dark) {
   :root {

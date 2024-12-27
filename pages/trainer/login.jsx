@@ -1,56 +1,40 @@
 import Link from "next/link";
 import { useState } from "react";
-import style from "../../styles/style.module.css";
 // import { sendOTP } from './api/sendOTP';
 import Image from "next/image";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 export default function Login() {
-  const [otpcheck, setotpcheck] = useState(true);
   const [email, setemail] = useState("");
-  const [help, sethelp] = useState("");
-  const [emailchecker, setemailchecker] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
-  const [termActive, setTermActive] = useState(false);
-  const [contact, setContact] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   const [validatepassword, setvalidatepassword] = useState(true);
   const [password, setpassword] = useState("");
   const [validateemail, setvalidateemail] = useState(true);
-  const [user_name, setuser_name] = useState("");
   const router = useRouter();
 
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
-  };
-  const characterCount = inputValue.length;
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-  const emailcheck = () => {
-    if (email === "") {
-      setemailchecker(false);
-    } else {
-      setemailchecker(true);
-      setContact(false);
-    }
-  };
-  const handleOptionSelect = (option) => {
-    sethelp(option);
-    setIsOpen(false);
-  };
   const handleSubmit = async (e) => {
+    try {
+      const response = await axios.post("/api/trainer/", {
+        email,
+        password,
+      });
+      if (response.data.success) {
+        router.push("/trainer/batches");
+      } else {
+        console.log("login failed", response.error);
+        setvalidatepassword(false);
+        setvalidateemail(false);
+      }
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
     e.preventDefault();
-    if (password === "" || user_name === "") {
+    if (password === "" || email === "") {
       setvalidatepassword(false);
       setvalidateemail(false);
-      setotpcheck(false);
     } else {
       setvalidateemail(true);
       setvalidatepassword(true);
-      setotpcheck(true);
-      router.push("/trainer/batches");
     }
   };
   return (
@@ -76,7 +60,7 @@ export default function Login() {
             <input
               id="numberedInput"
               type="text"
-              onChange={(e) => setuser_name(e.target.value)}
+              onChange={(e) => setemail(e.target.value)}
               placeholder="Username"
               className={
                 validateemail

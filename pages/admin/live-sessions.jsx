@@ -1,32 +1,114 @@
 import Image from "next/image";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useState, useEffect } from "react";
 import AdminNavbar from "../../components/adminbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("");
-  const [addmodule, setaddmodule] = useState(false);
-  const [addassessment, setaddassessment] = useState(false);
-  const [viewprofile, setviewprofile] = useState(false);
+  const [selectedUpdate, setselectedUpdate] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [sessionTime, setsessionTime] = useState(false);
+  const [sessionEndTime, setsessionEndTime] = useState(false);
   const [remark, setRemark] = useState(false);
+  const [session, setsession] = useState(false);
+  const [sessionData, setSessionData] = useState([]);
   const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
   const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
-
+  const [SessionEndTimeValue, setSessionEndTimeValue] = useState("PM");
+  const [form, setForm] = useState({
+    sessionType: "",
+    sessionName: "",
+    link: "",
+    startTime: "",
+    endTime: "",
+  });
+  const [startHour, setStartHour] = useState("");
+  const [endHour, setendHour] = useState("");
+  const [endMinutes, setendMinutes] = useState("");
+  const [startMinutes, setstartMinutes] = useState("");
   const handleSelect = (value) => {
     setItem(value);
+    setForm({ ...form, sessionType: value });
     setIsOpen(false);
   };
   const handleTimeSelect = (value) => {
     setSessionTimeValue(value);
     setsessionTime(false);
   };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
+  const handleTimeSelectEnd = (value) => {
+    setSessionEndTimeValue(value);
+    setsessionEndTime(false);
   };
+  const handleChangeText = (e) => {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  };
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      console.log("Session created successfully", data);
+      setsession(!session);
+      setForm({
+        sessionType: "",
+        sessionName: "",
+        link: "",
+        startTime: "",
+        endTime: "",
+      });
+      setItem("Select session type");
+      setStartHour("");
+      setendHour("");
+      setendMinutes("");
+      setstartMinutes("");
+      setSessionTimeValue("PM");
+      setSessionEndTimeValue("PM");
+    } catch (error) {
+      console.error("Failed to create session", error);
+    }
+  };
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`/api/admin/session?_id=${id}`, {
+        method: "DELETE",
+        body: id,
+      });
+      const result = await response.json();
+      if (response.ok) {
+        console.log(result.message);
+        setsession(!session);
+      } else {
+        console.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+  useEffect(() => {
+    setForm({
+      ...form,
+      startTime: `${startHour}:${startMinutes}${SessionTimeValue}`,
+    });
+  }, [startHour, startMinutes, SessionTimeValue]);
+  useEffect(() => {
+    setForm({
+      ...form,
+      endTime: `${endHour}:${endMinutes}${SessionEndTimeValue}`,
+    });
+  }, [endHour, endMinutes, SessionEndTimeValue]);
+  useEffect(() => {
+    async function fetchstudents() {
+      const res = await axios.get(`/api/admin/session`);
+      setSessionData(res.data);
+    }
+    fetchstudents();
+  }, [session]);
   return (
     <>
       <AdminNavbar />
@@ -44,7 +126,7 @@ export default function Jobs() {
                     Session type
                   </p>
                   <Image
-                    src="/drop.svg"
+                    src="/images/drop.svg"
                     className={
                       isOpen
                         ? "absolute rotate-180 max-md:right-[40px] max-md:left-auto left-[203px] cursor-pointer top-[138px]"
@@ -65,19 +147,21 @@ export default function Jobs() {
                     <div className="bg-white max-md:w-[calc(100%-80px)] rounded-[4px] max-sm:w-[calc(100%-40px)] absolute border-[1px] border-black top-[165px] z-[22222] cursor-pointer">
                       <ul>
                         <li
-                          onClick={() => handleSelect("")}
+                          onClick={() => handleSelect("Doubt Clearing Session")}
                           className="pl-[15.71px] w-[223.2px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer pt-[11px] pb-[11px] text-[14px] leading-[16.8px]"
                         >
                           Doubt Clearing Session
                         </li>
                         <li
-                          onClick={() => handleSelect("")}
+                          onClick={() => handleSelect("Update Session")}
                           className="pl-[15.71px] w-[223.2px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] max-md:w-full cursor-pointer pt-[11px] pb-[11px] text-[14px] leading-[16.8px]"
                         >
                           Update Session
                         </li>
                         <li
-                          onClick={() => handleSelect("")}
+                          onClick={() =>
+                            handleSelect("Answer Revealing Session")
+                          }
                           className="pl-[15.71px] w-[223.2px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] transition-all max-md:w-full cursor-pointer pt-[11px] pb-[11px] text-[14px] leading-[16.8px]"
                         >
                           Answer Revealing Session
@@ -92,7 +176,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="sessionName"
+                    value={form.sessionName}
+                    onChange={handleChangeText}
                     id=""
                     placeholder=""
                     className="w-[407px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-black"
@@ -107,7 +193,9 @@ export default function Jobs() {
                     </p>
                     <input
                       type="text"
-                      name=""
+                      name="link"
+                      value={form.link}
+                      onChange={handleChangeText}
                       id=""
                       placeholder=""
                       className="w-[407px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-black"
@@ -123,21 +211,27 @@ export default function Jobs() {
                       <input
                         type="text"
                         name=""
+                        value={startHour}
+                        onChange={(e) => setStartHour(e.target.value)}
                         id=""
+                        maxLength={2}
                         placeholder=""
-                        className="w-[40px] text-[14px] leading-[16.8px]"
+                        className="w-[40px] text-[16px] leading-[16.8px] pl-[10px]"
                       />
                       <span>:</span>
                       <input
                         type="text"
                         name=""
                         id=""
+                        maxLength={2}
+                        onChange={(e) => setstartMinutes(e.target.value)}
                         placeholder=""
-                        className="w-[40px] text-[14px] leading-[16.8px]"
+                        value={startMinutes}
+                        className="w-[40px] text-[16px] leading-[16.8px] pl-[10px]"
                       />
                     </div>
                     <Image
-                      src="/drop.svg"
+                      src="/images/drop.svg"
                       className={
                         sessionTime
                           ? "absolute rotate-180 max-sm:right-[40px] max-md:right-[60px] left-[158px] cursor-pointer top-[19px]"
@@ -183,48 +277,54 @@ export default function Jobs() {
                       <input
                         type="text"
                         name=""
+                        maxLength={2}
                         id=""
+                        value={endHour}
+                        onChange={(e) => setendHour(e.target.value)}
                         placeholder=""
-                        className="w-[40px] text-[14px] leading-[16.8px]"
+                        className="w-[40px] text-[16px] leading-[16.8px] pl-[10px]"
                       />
                       <span>:</span>
                       <input
                         type="text"
                         name=""
+                        value={endMinutes}
+                        onChange={(e) => setendMinutes(e.target.value)}
+                        maxLength={2}
                         id=""
                         placeholder=""
-                        className="w-[40px] text-[14px] leading-[16.8px]"
+                        className="w-[40px] text-[16px] leading-[16.8px] pl-[10px]"
                       />
                     </div>
                     <Image
-                      src="/drop.svg"
+                      src="/images/drop.svg"
                       className={
-                        sessionTime
+                        sessionEndTime
                           ? "absolute rotate-180 max-sm:right-[40px] max-md:right-[60px] left-[158px] cursor-pointer top-[19px]"
                           : "absolute left-[158px] max-sm:right-[40px] max-md:right-[60px] cursor-pointer top-[19px]"
                       }
                       width={14.77}
                       height={7.95}
-                      onClick={() => setsessionTime(!sessionTime)}
+                      onClick={() => setsessionEndTime(!sessionTime)}
                     />
                     <div
-                      onClick={() => setsessionTime(!sessionTime)}
+                      onClick={() => setsessionEndTime(!sessionTime)}
                       className="pl-[15.71px] h-[45px] bg-white cursor-pointer w-[75px] border-[1px] border-black rounded-[6px] pt-[13.93px] pb-[20.07px] text-[14px] leading-[16.8px]"
                     >
                       {" "}
-                      {SessionTimeValue}
+                      {SessionEndTimeValue}
                     </div>{" "}
-                    {sessionTime && (
+                    {sessionEndTime && (
                       <div className="bg-white rounded-[4px] absolute border-[1px] border-black top-[45px] left-[108px] z-[22222] cursor-pointer">
                         <ul>
                           <li
-                            onClick={() => handleTimeSelect("PM")}
+                            onClick={() => handleTimeSelectEnd("PM")}
                             className="pl-[15.71px] w-[75px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] cursor-pointer pt-[11px] pb-[11px] text-[14px] leading-[16.8px]"
                           >
                             PM
                           </li>
                           <li
-                            onClick={() => handleTimeSelect("AM")}
+                            onClick={() => handleTimeSelectEnd("AM")}
                             className="pl-[15.71px] w-[75px] border-b-[0.5px] hover:bg-[#0000001A] hover:border-[#0000001A] cursor-pointer pt-[11px] pb-[11px] text-[14px] leading-[16.8px]"
                           >
                             AM
@@ -235,7 +335,10 @@ export default function Jobs() {
                   </div>
                 </div>
               </div>
-              <button className="h-[37px] w-[112px] max-smallphone:w-full bg-black text-white rounded-[6px] mt-[16px] text-[14px] leading-[16.8px]">
+              <button
+                onClick={handleSubmit}
+                className="h-[37px] w-[112px] max-smallphone:w-full bg-black text-white rounded-[6px] mt-[16px] text-[14px] leading-[16.8px]"
+              >
                 Add Session{" "}
               </button>
             </div>
@@ -261,243 +364,65 @@ export default function Jobs() {
                     Session end time
                   </p>
                   <p className="text-[14px] leading-[16.8px] opacity-70">
-                    Zoom meeting link
+                    G-Meet link
                   </p>
                 </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      01
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
+                {sessionData.map((session, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]"
+                  >
+                    <div className="flex items-center">
+                      <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                        {index + 1}
+                      </p>
+                      <input
+                        type="text"
+                        className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]"
+                        value={session.sessionType}
+                      />
+                      <input
+                        type="text"
+                        className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]"
+                        value={session.sessionName}
+                      />
+                      <input
+                        type="text"
+                        className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]"
+                        value={session.startTime}
+                      />
+                      <input
+                        type="text"
+                        className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]"
+                        value={session.endTime}
+                      />
 
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
+                      <input
+                        type="text"
+                        name=""
+                        id=""
+                        value={session.link}
+                        placeholder=""
+                        className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
+                      />
+                    </div>
+                    <div className="flex gap-[28px] items-center">
+                      <button
+                        onClick={(e) => setselectedUpdate(session._id)}
+                        className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]"
+                      >
+                        Update
+                      </button>
+                      <Image
+                        src="/images../../delete.svg"
+                        onClick={() => handleDelete(session._id)}
+                        className="cursor-pointer"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
                   </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      02
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
-
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
-                  </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      03
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
-
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
-                  </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      04
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
-
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
-                  </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      05
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
-
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
-                  </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1260px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      06
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] w-[160px] mr-[7px]">
-                      Session type
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] w-[300px] mr-[50px] max-[1440px]:w-[200px]">
-                      Session name
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] w-[150px] mr-[27px]">
-                      Session start time
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] w-[150px] mr-[14px]">
-                      Session end time
-                    </p>
-
-                    <input
-                      type="text"
-                      name=""
-                      id=""
-                      placeholder=""
-                      className="w-[228px] text-[14px] leading-[16.8px] placeholder:opacity-70 pl-[14.28px] rounded-[6px] h-[45px] bg-[white] border-[1px] border-[#0000004D]"
-                    />
-                  </div>
-                  <div className="flex gap-[28px] items-center">
-                    <button className="w-[75px] py-[5px] bg-white text-black border-black border-[1px] rounded-[4px] text-[16px] leading-[19.2px]">
-                      Update
-                    </button>
-                    <Image
-                      src="../../delete.svg"
-                      onClick={() => setRemark(true)}
-                      className="cursor-pointer"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             <section className="mt-[16px] max-sm:px-[20px] max-md:pr-[20px] max-xl:h-auto max-hamburger:px-[25px] max-xl:pb-[40px] max-hamburger:pr-[40px] max-xl:w-full bg-white rounded-[5px] w-full h-[351px] pt-[29.77px] pl-[38px]">

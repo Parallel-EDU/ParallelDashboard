@@ -1,12 +1,13 @@
-import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import axios from "axios";
-import Cookies from 'js-cookie';
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function Login() {
   const [state, setState] = useState("1/4");
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -15,6 +16,7 @@ export default function Login() {
     currentOccupation: "",
     highestQualification: "",
     branchOfDegree: "",
+    SID: " ",
     collegeName: "",
     panNumber: "",
     panPhoto: "",
@@ -39,59 +41,80 @@ export default function Login() {
   const handleNext = async (nextState) => {
     try {
       if (state === "1/4") {
-        await axios.post("/api/onboarding/personalInfo/route", {
-          name: formData.name,
-          phoneNumber: formData.phoneNumber,
-          email: formData.email,
-          dateOfBirth: formData.dateOfBirth,
-          userId: '6693e0d55bec495a0083f64d',
-        });
+        if (
+          formData.name === "" ||
+          formData.phoneNumber === "" ||
+          formData.dateOfBirth === "" ||
+          formData.email === ""
+        ) {
+          alert("Enter all the fields");
+        } else {
+          setState("2/4");
+        }
       } else if (state === "2/4") {
-        await axios.post("/api/onboarding/academics/route", {
-          currentOccupation: formData.currentOccupation,
-          highestQualification: formData.highestQualification,
-          branchOfDegree: formData.branchOfDegree,
-          collegeName: formData.collegeName,
-          userId: '6693e0d55bec495a0083f64d',
-
-        });
+        if (
+          formData.currentOccupation === "" ||
+          formData.highestQualification === "" ||
+          formData.branchOfDegree === "" ||
+          formData.college === ""
+        ) {
+          alert("Enter all the fields");
+        } else {
+          setState("3/4");
+        }
       } else if (state === "3/4") {
         const formDataKyc = new FormData();
         formDataKyc.append("panNumber", formData.panNumber);
         formDataKyc.append("panPhoto", formData.panPhoto);
         formDataKyc.append("passportPhoto", formData.passportPhoto);
-        formDataKyc.append('userId', formData.userId);
-
-        try {
-          const token = Cookies.get('token');
-
-          if (!token) {
-            throw new Error('No token found');
+        formDataKyc.append("userId", formData.userId);
+        if (
+          formData.panNumber === ""
+          // ||
+          // formData.panPhoto === "" ||
+          // formData.passportPhoto === ""
+        ) {
+          alert("Enter all the fields");
+        } else {
+          setState("4/4");
+        }
+      } else {
+        if (formData.course === "") {
+          alert("Enter all the fields");
+        } else {
+          const response = await axios.post(
+            "/api/onboarding/personalInfo/route",
+            formData
+          );
+          try {
+            const token = Cookies.get("token");
+            if (!token) {
+              throw new Error("No token found");
+            }
+            const response = await axios.post(
+              "/api/onboarding/kyc/route",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  Authorization: `Bearer ${token}`,
+                },
+                userId: "6693e0d55bec495a0083f64d",
+              }
+            );
+            console.log("Response:", response.data);
+          } catch (error) {
+            if (error.response) {
+              console.error("Error response:", error.response.data);
+            } else if (error.request) {
+              console.error("Error request:", error.request);
+            } else {
+              console.error("Error message:", error.message);
+            }
           }
-          const response = await axios.post("/api/onboarding/kyc/route", formDataKyc, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              "Authorization": `Bearer ${token}`
-            },
-            userId: '6693e0d55bec495a0083f64d',
-
-          });
-          console.log('Response:', response.data);
-        } catch (error) {
-          if (error.response) {
-            console.error('Error response:', error.response.data);
-          } else if (error.request) {
-            console.error('Error request:', error.request);
-          } else {
-            console.error('Error message:', error.message);
-          }
+          router.push("/login");
         }
       }
-
-
-
-
-      setState(nextState);
     } catch (error) {
       console.error("Error submitting form data", error);
     }
@@ -103,19 +126,21 @@ export default function Login() {
         <div className="w-[710px] max-md:w-full max-md:px-[40px] overflow-scroll max-sm:px-[20px] max-md:w-full bg-[white] h-[100vh] flex flex-col justify-between pl-[40px] pb-[42.16px] pt-[118.42px] pr-[113px]">
           <div className="flex w-[502.43px] max-md:w-full flex-col gap-[32px]">
             <div className="flex items-center max-md:w-full mb-[9px] w-[420.97px] justify-between">
-              <Image
-                src="back.svg"
-                className="mt-[0.61px]"
-                width={44.97}
-                height={44.97}
-              />
+              <Link href={"/signup"}>
+                <Image
+                  src="/images/back.svg"
+                  className="mt-[0.61px]"
+                  width={44.97}
+                  height={44.97}
+                />
+              </Link>
               <p className="text-base text-[#00000099]">1/4</p>
             </div>
             <div className="absolute w-[calc(100%-40px)] max-md:hidden z-[-1] top-0 h-full overflow-hidden">
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -131,6 +156,7 @@ export default function Login() {
                 id="name"
                 type="text"
                 name="name"
+                required
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your name"
@@ -191,7 +217,7 @@ export default function Login() {
           <div className="flex w-[502.43px] max-md:w-full flex-col gap-[32px]">
             <div className="flex items-center max-md:w-full mb-[9px] w-[420.97px] justify-between">
               <Image
-                src="back.svg"
+                src="/images/back.svg"
                 onClick={() => setState("1/4")}
                 className="mb-[0.61px] cursor-pointer"
                 width={44.97}
@@ -203,7 +229,7 @@ export default function Login() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -314,9 +340,9 @@ export default function Login() {
           <div className="flex w-[502.43px] max-md:w-full flex-col gap-[32px]">
             <div className="flex items-center max-md:w-full mb-[9px] w-[420.97px] justify-between">
               <Image
-                src="back.svg"
-                onClick={() => setstate("2/4")}
-                className="mb-[0.61px]"
+                src="/images/back.svg"
+                onClick={() => setState("2/4")}
+                className="mb-[0.61px] cursor-pointer"
                 width={44.97}
                 height={44.97}
               />
@@ -326,7 +352,7 @@ export default function Login() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -377,15 +403,23 @@ export default function Login() {
                       {formData.panPhoto === "" ? (
                         "Max file size: 3 MB"
                       ) : (
-                        <Image src="/green-tick.svg" width={16} height={12} />
+                        <Image
+                          src="/images/green-tick.svg"
+                          width={16}
+                          height={12}
+                        />
                       )}
                     </span>
                   </div>
                   {formData.panPhoto === "" ? (
-                    <Image src="/upload-pan.svg" width={62} height={67} />
+                    <Image
+                      src="/images/upload-pan.svg"
+                      width={62}
+                      height={67}
+                    />
                   ) : (
                     <Image
-                      src="/undo.svg"
+                      src="/images/undo.svg"
                       onClick={handleFileChange}
                       width={62}
                       height={67}
@@ -422,15 +456,23 @@ export default function Login() {
                       {formData.passportPhoto === "" ? (
                         "Max file size: 3 MB"
                       ) : (
-                        <Image src="/green-tick.svg" width={16} height={12} />
+                        <Image
+                          src="/images/green-tick.svg"
+                          width={16}
+                          height={12}
+                        />
                       )}
                     </span>
                   </div>
                   {formData.passportPhoto === "" ? (
-                    <Image src="/upload-pan.svg" width={62} height={67} />
+                    <Image
+                      src="/images/upload-pan.svg"
+                      width={62}
+                      height={67}
+                    />
                   ) : (
                     <Image
-                      src="/undo.svg"
+                      src="/images/undo.svg"
                       onClick={handleFileChange}
                       width={62}
                       height={67}
@@ -454,7 +496,7 @@ export default function Login() {
           <div className="flex w-[502.43px] max-md:w-full flex-col gap-[32px]">
             <div className="flex items-center max-md:w-full mb-[9px] w-[420.97px] justify-between">
               <Image
-                src="back.svg"
+                src="/images/back.svg"
                 onClick={() => setState("3/4")}
                 className="mb-[0.61px]"
                 width={44.97}
@@ -466,7 +508,7 @@ export default function Login() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -476,14 +518,14 @@ export default function Login() {
             </strong>
             <div className="flex flex-col relative">
               <p className="text-black text-[13px] bg-white mb-[13px] p-[8px] leading-[15.6px]">
-                Current occupation
+                Course
               </p>
-              <div className="flex gap-[20px] max-[380px]:flex-col max-md:w-full w-[434px]">
+              <div className="flex gap-[20px] max-sm:flex-col max-md:w-full">
                 <div className="flex items-center gap-[4px]">
                   <input
                     type="radio"
-                    name="currentOccupation"
-                    value="Employed"
+                    name="course"
+                    value="Frontend Mastery"
                     onChange={handleChange}
                     id="occupation-employed"
                   />
@@ -491,14 +533,14 @@ export default function Login() {
                     htmlFor="occupation-employed"
                     className="text-[14px] leading-[16.8px]"
                   >
-                    Employed
+                    Frontend Mastery
                   </label>
                 </div>
                 <div className="flex items-center gap-[4px]">
                   <input
                     type="radio"
-                    name="currentOccupation"
-                    value="Unemployed"
+                    name="course"
+                    value="Backend Mastery"
                     onChange={handleChange}
                     id="occupation-unemployed"
                   />
@@ -506,14 +548,14 @@ export default function Login() {
                     htmlFor="occupation-unemployed"
                     className="text-[14px] leading-[16.8px]"
                   >
-                    Unemployed
+                    Backend Mastery
                   </label>
                 </div>
                 <div className="flex items-center gap-[4px]">
                   <input
                     type="radio"
-                    name="currentOccupation"
-                    value="Student"
+                    name="course"
+                    value="Full Stack Development"
                     onChange={handleChange}
                     id="occupation-student"
                   />
@@ -521,34 +563,37 @@ export default function Login() {
                     htmlFor="occupation-student"
                     className="text-[14px] leading-[16.8px]"
                   >
-                    Student
+                    Full Stack Development
                   </label>
                 </div>
               </div>
-              <Link href={"/class"}>
-                <button className="w-[421px] max-md:w-full mt-[40px] py-[20px] bg-[#30E29D] text-black font-semibold rounded-[6px] text-base">
-                  Proceed to payment
-                </button>
-              </Link>
+              {/* <Link href={"/class"}> */}
+              <button
+                onClick={handleNext}
+                className="w-[421px] max-md:w-full mt-[40px] py-[20px] bg-[#30E29D] text-black font-semibold rounded-[6px] text-base"
+              >
+                Proceed to payment
+              </button>
+              {/* </Link> */}
             </div>
           </div>
         </div>
       )}
-       <div className="h-[100vh] max-md:hidden w-[50%] relative overflow-hidden">
+      <div className="h-[100vh] max-md:hidden w-[50%] relative overflow-hidden">
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}

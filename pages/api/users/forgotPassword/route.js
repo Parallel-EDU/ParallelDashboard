@@ -1,5 +1,3 @@
-"use client";
-
 import User from '../../../models/User';
 import ResetToken from '../../../models/resetTokenModel';
 import { connect } from '../../../lib/db';
@@ -17,7 +15,6 @@ export default async function handler(req, res) {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
-    console.log('after email find'); //->for debug puropose only
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -30,8 +27,6 @@ export default async function handler(req, res) {
     };
 
     const token = jwt.sign(tokenData, process.env.TOKEN_SECRET, { expiresIn: "1h" });
-    console.log("generated token", token);
-
     // Create a new reset token document
     const resetToken = new ResetToken({
       userId: user._id,

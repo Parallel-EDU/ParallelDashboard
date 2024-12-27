@@ -1,46 +1,110 @@
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useState, useEffect } from "react";
 import TrainerNavbar from "../../components/trainerbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("Assignments");
   const [remark, setRemark] = useState(false);
   const [assignment, setAssignment] = useState(false);
-  const [addmodule, setaddmodule] = useState(false);
-  const [addassessment, setaddassessment] = useState(false);
-  const [viewprofile, setviewprofile] = useState(false);
   const [count, setcount] = useState(0);
   const [remarkcount, setremarkcount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [sessionTime, setsessionTime] = useState(false);
-  const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
-  const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [Date, setDate] = useState('Select date');
+  const [selectedDate, setSelectedDate] = useState("Select date");
+  const [batches, setBatches] = useState([]);
+  const [formData, setFormData] = useState({
+    course: "",
+    batchId: "",
+    title: "",
+    topic: "",
+    description: "",
+    link: "",
+    dateAssign: "",
+  });
+  const [item, setItem] = useState("");
+  const [selectedbatch, setselectedBatch] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredBatches, setFilteredBatches] = useState([]);
+  const [studentsData, setstudentsData] = useState([]);
+  const [searchTermStudent, setsearchTermStudent] = useState("");
+  const [searchStudent, setsearchStudent] = useState([]);
 
-  const stars = [1, 2, 3, 4, 5];
   const handleSelect = (value) => {
+    setactive("View Submissions");
     setItem(value);
-    setIsOpen(false);
+    console.log(value);
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/${value}`);
+      setselectedBatch(res.data);
+    }
+    async function fetchstudents() {
+      const res = await axios.get(`/api/onboarding/personalInfo/route`);
+      setstudentsData(res.data);
+    }
+    fetchBatches();
+    fetchstudents();
   };
-  const handleTimeSelect = (value) => {
-    setSessionTimeValue(value);
-    setsessionTime(false);
+
+  useEffect(() => {
+    const results = batches.filter(
+      (batch) =>
+        batch.batchId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.students?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor1?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.course?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    setFilteredBatches(results);
+  }, [searchTerm, batches]);
+
+  useEffect(() => {
+    const results = studentsData.filter(
+      (student) =>
+        student.name?.toLowerCase().includes(searchTermStudent.toLowerCase()) ||
+        student.batchId?.toLowerCase().includes(searchTermStudent.toLowerCase())
+    );
+
+    setsearchStudent(results);
+  }, [searchTermStudent, studentsData]);
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
-  };
+  const stars = [1, 2, 3, 4, 5];
   const handleChangeTextAreaRemark = (e) => {
     setremarkcount(e.target.value.length);
   };
   const handleChangeTextArea = (e) => {
     setcount(e.target.value.length);
+    setFormData({ ...formData, description: event.target.value });
   };
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post(
+        "/api/platform/assignments/route",
+        formData
+      );
+      setactive("done");
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    console.log(formData);
+  };
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      dateAssign: new Date().toLocaleDateString(),
+    });
+  }, []);
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      setBatches(res.data);
+      console.log(res.data);
+    }
+    fetchBatches();
+  }, []);
   return (
     <>
       <TrainerNavbar />
@@ -76,7 +140,7 @@ export default function Jobs() {
           <>
             <div className="mb-[40px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -94,29 +158,30 @@ export default function Jobs() {
               </h1>
               <div className="mb-[13px] bg-white pl-[19.08px] max-md:flex-col max-md:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[34px] max-sm:gap-[8px] items-center">
                 <input
-                  type="search"
+                  type="text"
                   name=""
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-[483px] max-lg:w-[350px] max-md:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                   placeholder="Search student name, instructor, batch ID"
                   id=""
                 />
                 <Image
-                  src="/search.svg"
+                  src="/images/search.svg"
                   className="cursor-pointer max-lg:left-[330px] max-md:right-[24px] max-md:left-auto max-hamburger:right-[34px] max-hamburger:top-[27px] max-sm:top-[28px] absolute left-[467.88px]"
                   width={24}
                   height={24}
                 />
                 <div className="w-[244px] px-[14.28px] max-md:w-full  border-[1px] border-[#0000004D] rounded-[8px]">
-                  <select className="h-[48px] w-full">
-                    <option value="Select course" className="py-[18.5px]">
-                      Select course
+                  <select
+                    className="h-[48px] w-full"
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  >
+                    <option value="Full Stack Development">
+                      Full Stack Development
                     </option>
-                    <option
-                      value="Select course"
-                      className="w-[244px] h-[48px]"
-                    >
-                      Select course
-                    </option>
+                    <option value="Frontend Mastery">Frontend Mastery</option>
+                    <option value="Backend Mastery">Backend Mastery</option>
+                    <option value="">All</option>
                   </select>
                 </div>
               </div>
@@ -138,256 +203,73 @@ export default function Jobs() {
                     | Current progress
                   </p>
                 </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      01
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      02
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      03
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      04
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      05
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      06
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      07
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      08
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      09
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]">
-                  <div className="flex items-center">
-                    <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                      10
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                      BFSD053AK{" "}
-                    </p>
-                    <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                      FSD{" "}
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                      20
-                    </p>
-                    <p className="text-[14px] leading-[16.8px] opacity-70">
-                      Week 04
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setactive("View Submissions")}
-                    className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                  >
-                    View Submissions{" "}
-                  </button>
-                </div>
+                {searchTerm === ""
+                  ? batches.map((batch, index) => (
+                      <div
+                        key={batch._id}
+                        className="flex items-center justify-between pl-[11.5px] pr-[39px] max-[1300px]:pr-[20px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1149px]"
+                      >
+                        <div className="flex items-center">
+                          <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                            {" "}
+                            {index + 1}
+                          </p>
+                          <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                            {batch.batchId}{" "}
+                          </p>
+                          <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                            {batch.course === "Full Stack Development"
+                              ? "FSD"
+                              : batch.course}
+                          </p>
+                          <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                            {batch.students}
+                          </p>
+                          <p className="text-[14px] leading-[16.8px] opacity-70">
+                            | {batch.progress}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleSelect(batch._id)}
+                          className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                        >
+                          View Submissions
+                        </button>
+                      </div>
+                    ))
+                  : filteredBatches.map((batch, index) => (
+                      <div
+                        key={batch._id}
+                        className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                      >
+                        <div className="flex items-center">
+                          <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                            {" "}
+                            {index + 1}
+                          </p>
+                          <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                            {batch.batchId}{" "}
+                          </p>
+                          <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                            {batch.course === "Full Stack Development"
+                              ? "FSD"
+                              : batch.course}
+                          </p>
+                          <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                            {batch.students}
+                          </p>
+                          <p className="text-[14px] leading-[16.8px] opacity-70">
+                            | {batch.progress}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleSelect(batch._id)}
+                          className="w-[155px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                        >
+                          View Submissions
+                        </button>
+                      </div>
+                    ))}
               </div>
             </>
           </>
@@ -396,7 +278,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -419,7 +301,13 @@ export default function Jobs() {
                   </p>
                   <div className="flex max-sm:flex-wrap max-sm:w-[100%] gap-[20px] w-[494px]">
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChange}
+                        value="Full Stack Development"
+                        name="course"
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] leading-[16.8px]"
@@ -428,7 +316,12 @@ export default function Jobs() {
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChange}
+                        value="Backend Mastery"
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] leading-[16.8px]"
@@ -437,7 +330,13 @@ export default function Jobs() {
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        name="course"
+                        onChange={handleChange}
+                        value="Frontend Mastery"
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] h-[20px] leading-[16.8px]"
@@ -452,11 +351,18 @@ export default function Jobs() {
                   <div className="w-[279px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      onChange={handleChange}
+                      value={formData.batchId}
+                      name="batchId"
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[45px] bg-[white]"
                     >
-                      <option value="">Batch Code</option>
+                      <option value="">Select Batch</option>
+                      {batches.map((batch, index) => (
+                        <option key={batch._id} value={batch.batchId}>
+                          {batch.batchId}
+                        </option>
+                      ))}{" "}
                     </select>
                   </div>
                   <div className="flex max-sm:flex-col mt-[16px] gap-[16px]">
@@ -466,7 +372,9 @@ export default function Jobs() {
                       </p>
                       <input
                         type="text"
-                        name=""
+                        value={formData.title}
+                        name="title"
+                        onChange={handleChange}
                         placeholder="Enter heading"
                         id=""
                         className="w-[288px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -478,7 +386,9 @@ export default function Jobs() {
                       </p>
                       <input
                         type="text"
-                        name=""
+                        value={formData.topic}
+                        name="topic"
+                        onChange={handleChange}
                         placeholder="Topic name"
                         id=""
                         className="w-[288px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -494,11 +404,11 @@ export default function Jobs() {
                       onChange={handleChangeTextArea}
                       maxLength={250}
                       className="w-[639px] h-[138px] rounded-[4px] resize-none border-[0.5px] py-[11.5px] px-[12.74px] max-hamburger:w-[100%] border-[#00000080]"
-                      name=""
+                      name="description"
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count} / 250px
+                      {count} / 250
                     </p>
                   </div>
                   <p className="text-[14px] mt-[16px] leading-[18.2px] mb-[10px]">
@@ -506,12 +416,14 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    value={formData.link}
+                    onChange={handleChange}
+                    name="link"
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
                   <button
-                    onClick={() => setactive("done")}
+                    onClick={handleSubmit}
                     className="text-[14px] max-sm:w-full block leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] mt-[36px] py-[10px]"
                   >
                     Send Assignment
@@ -524,7 +436,7 @@ export default function Jobs() {
         {active === "done" && (
           <div className="w-full flex justify-center pt-[55px] max-sm:px-[20px] max-[400px]:px-[10px] h-[630px] pb-[47px] bg-white rounded-[8px]">
             <div className="w-[483px] h-[419px] max-sm:px-[20px] max-sm:w-full max-[400px]:px-[10px] border-[1px] border-[#00000033] rounded-[6px] pt-[30px] flex flex-col items-center">
-              <Image src="/done.svg" width={193.08} height={193.08} />
+              <Image src="/images/done.svg" width={193.08} height={193.08} />
               <h1 className="text-[20px] leading-[26px] mt-[36.92px] font-semibold">
                 Assignment Sent to Batch BFSD053AK
               </h1>
@@ -541,7 +453,7 @@ export default function Jobs() {
           <>
             <div className="mb-[40px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -566,13 +478,13 @@ export default function Jobs() {
                     >
                       <input
                         type="date"
-                        onChange={(e) => setDate(e.target.value)}
+                        onChange={(e) => setSelectedDate(e.target.value)}
                         name="calender"
                         className="h-[48px] pl right-0 absolute pl-[80px] opacity-0 flex items-center justify-between border-[#0000004D] border-[1px] py-[12px] pr-[14.28px] rounded-[6px]"
                         id="calender"
                       />
-                      <p className="text-[14px]">{Date}</p>
-                      <Image src="/calender.svg" width={24} height={24} />
+                      <p className="text-[14px]">{selectedDate}</p>
+                      <Image src="/images/calender.svg" width={24} height={24} />
                     </label>
                   </div>
                 </div>
@@ -676,11 +588,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -713,11 +625,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -750,11 +662,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -787,11 +699,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -824,11 +736,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -861,11 +773,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -898,11 +810,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -935,11 +847,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -972,11 +884,11 @@ export default function Jobs() {
                   </button>
                   <div className=" flex items-center gap-[22.09px] border-l-[1px] border-[#00000033] py-[17.41px] pl-[26.53px]">
                     <div className="flex gap-[4.76px]">
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
-                      <Image src="/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
+                      <Image src="/images/blank.svg" width={24.17} height={24.17} />
                     </div>
                     <p
                       onClick={() => setRemark(true)}
@@ -993,50 +905,50 @@ export default function Jobs() {
       </main>
       {assignment && (
         <div className="fixed top-0 bg-[#00000066] w-full h-[100vh] z-50 flex justify-center items-center">
-        <div className="w-[887px] max-lg:w-[95%] bg-white relative rounded-[6px] pt-[53.01px] max-md:px-[20px] max-md:py-[30px] pb-[51.06px] pl-[48px]">
-          <Image
-            src="/close.svg"
-            className="absolute cursor-pointer max-md:right-[20px] max-md:top-[20px] right-[60.02px] top-[53.01px]"
-            onClick={() => setAssignment(false)}
-            width={40}
-            height={40}
-          />
-          <h1 className="text-[20px] w-[541.83px] max-md:w-[90%] leading-[26px] font-semibold mb-[20px]">
-            Faucibus nec adipiscing lacus faucibus rhoncus elit consequat.
-            Suscipit lacus.
-          </h1>
-          <p className="mb-[20px] max-md:w-full w-[587px] text-base">
-            Mi mi morbi molestie integer lacinia arcu leo purus. Fringilla
-            volutpat tellus vitae est. Sapien eget amet elit placerat.
-            Porttitor urna egestas nisi viverra quam magnis lectus scelerisque
-            integer. Est viverra augue pulvinar quisque. Arcu luctus nec duis
-            suspendisse. Sagittis est donec at ut tortor vulputate in. Ut
-            pharetra dis augue duis vitae viverra id. Aliquam aliquet turpis
-            vulputate.
-          </p>
-          <button className="bg-white mb-[31px] text-black font-semibold border-[1px] border-[black] px-[24px] py-[12.04px] rounded-[6px] text-[16px] leading-[19.2px]">
-            View Resources
-          </button>
-          <div className="pt-[31px] max-md:w-full border-t-[1px] w-[649px] border-[#00000033]">
-            <p className="text-[#2C2E32] mb-[10px] text-[14px]">
-              Submitted link{" "}
-            </p>
-            <input
-              type="text"
-              className="border-[0.5px] max-sm:w-full rounded-[4px] py-[18.5px] px-[16.27px] w-[309px] italic text-[14px] border-[#00000080]"
-              placeholder="https/sdgsdklhglhfldfh/.sdkghsihgfhjhh"
-              name=""
-              id=""
+          <div className="w-[887px] max-lg:w-[95%] bg-white relative rounded-[6px] pt-[53.01px] max-md:px-[20px] max-md:py-[30px] pb-[51.06px] pl-[48px]">
+            <Image
+              src="/images/close.svg"
+              className="absolute cursor-pointer max-md:right-[20px] max-md:top-[20px] right-[60.02px] top-[53.01px]"
+              onClick={() => setAssignment(false)}
+              width={40}
+              height={40}
             />
+            <h1 className="text-[20px] w-[541.83px] max-md:w-[90%] leading-[26px] font-semibold mb-[20px]">
+              Faucibus nec adipiscing lacus faucibus rhoncus elit consequat.
+              Suscipit lacus.
+            </h1>
+            <p className="mb-[20px] max-md:w-full w-[587px] text-base">
+              Mi mi morbi molestie integer lacinia arcu leo purus. Fringilla
+              volutpat tellus vitae est. Sapien eget amet elit placerat.
+              Porttitor urna egestas nisi viverra quam magnis lectus scelerisque
+              integer. Est viverra augue pulvinar quisque. Arcu luctus nec duis
+              suspendisse. Sagittis est donec at ut tortor vulputate in. Ut
+              pharetra dis augue duis vitae viverra id. Aliquam aliquet turpis
+              vulputate.
+            </p>
+            <button className="bg-white mb-[31px] text-black font-semibold border-[1px] border-[black] px-[24px] py-[12.04px] rounded-[6px] text-[16px] leading-[19.2px]">
+              View Resources
+            </button>
+            <div className="pt-[31px] max-md:w-full border-t-[1px] w-[649px] border-[#00000033]">
+              <p className="text-[#2C2E32] mb-[10px] text-[14px]">
+                Submitted link{" "}
+              </p>
+              <input
+                type="text"
+                className="border-[0.5px] max-sm:w-full rounded-[4px] py-[18.5px] px-[16.27px] w-[309px] italic text-[14px] border-[#00000080]"
+                placeholder="https/sdgsdklhglhfldfh/.sdkghsihgfhjhh"
+                name=""
+                id=""
+              />
+            </div>
           </div>
         </div>
-      </div>
       )}{" "}
       {remark && (
         <div className="fixed top-0 bg-[#00000066] w-full h-[110vh] z-50 flex justify-center items-center">
           <div className="w-[657px] max-md:w-[95%] max-md:px-[20px] bg-white relative rounded-[6px] pt-[35px] pb-[23px] pl-[37px]">
             <Image
-              src="/close.svg"
+              src="/images/close.svg"
               className="absolute cursor-pointer right-[39px] top-[25.01px]"
               onClick={() => setRemark(false)}
               width={40}

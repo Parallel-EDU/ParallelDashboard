@@ -1,36 +1,61 @@
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import style from "../../styles/style.module.css";
+import { useState, useEffect } from "react";
 import TrainerNavbar from "../../components/trainerbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("progress");
-  const [addmodule, setaddmodule] = useState(false);
-  const [addassessment, setaddassessment] = useState(false);
-  const [viewprofile, setviewprofile] = useState(false);
-  const [count, setcount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [sessionTime, setsessionTime] = useState(false);
-  const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
-  const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
+  const [item, setItem] = useState("");
+  const [batches, setBatches] = useState([]);
+  const [selectedbatch, setselectedBatch] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredBatches, setFilteredBatches] = useState([]);
+  const [studentsData, setstudentsData] = useState([]);
+  const [searchTermStudent, setsearchTermStudent] = useState("");
+  const [searchStudent, setsearchStudent] = useState([]);
+
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      setBatches(res.data);
+      console.log(res.data);
+    }
+    fetchBatches();
+  }, []);
 
   const handleSelect = (value) => {
+    setactive("View Progress");
     setItem(value);
-    setIsOpen(false);
+    console.log(value);
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/${value}`);
+      setselectedBatch(res.data);
+    }
+    fetchBatches();
   };
-  const handleTimeSelect = (value) => {
-    setSessionTimeValue(value);
-    setsessionTime(false);
-  };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
-  };
-  const handleChangeTextArea = (e) => {
-    setcount(e.target.value.length);
-  };
+
+  useEffect(() => {
+    const results = batches.filter(
+      (batch) =>
+        batch.batchId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.students?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor1?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.instructor2?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        batch.course?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    setFilteredBatches(results);
+  }, [searchTerm, batches]);
+
+  useEffect(() => {
+    const results = studentsData.filter(
+      (student) =>
+        student.name?.toLowerCase().includes(searchTermStudent.toLowerCase()) ||
+        student.batchId?.toLowerCase().includes(searchTermStudent.toLowerCase())
+    );
+
+    setsearchStudent(results);
+  }, [searchTermStudent, studentsData]);
   return (
     <>
       <TrainerNavbar />
@@ -40,26 +65,30 @@ export default function Jobs() {
           <>
             <div className="mb-[13px] bg-white pl-[19.08px] max-md:flex-col max-md:items-start relative pt-[15px] pb-[14px] max-md:px-[20px] max-sm:px-[15px] pr-[22.92px] rounded-[6px] flex gap-[34px] max-sm:gap-[8px] items-center">
               <input
-                type="search"
+                type="text"
                 name=""
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-[483px] max-lg:w-[350px] max-md:w-full h-[48px] rounded-[9px] bg-[#F8F8F8] border-[#00000033] border-[1px] placeholder:text-[#000000B2] text-[14px] leading-[16.8px] pl-[18.63px] pr-[14px]"
                 placeholder="Search student name, instructor, batch ID"
                 id=""
               />
               <Image
-                src="/search.svg"
+                src="/images/search.svg"
                 className="cursor-pointer max-lg:left-[330px] max-md:right-[24px] max-md:left-auto max-hamburger:right-[34px] max-hamburger:top-[27px] max-sm:top-[28px] absolute left-[467.88px]"
                 width={24}
                 height={24}
               />
               <div className="w-[244px] px-[14.28px] max-md:w-full  border-[1px] border-[#0000004D] rounded-[8px]">
-                <select className="h-[48px] w-full">
-                  <option value="Select course" className="py-[18.5px]">
-                    Select course
+                <select
+                  className="h-[48px] w-full"
+                  onChange={(e) => setSearchTerm(e.target.value)} // Set searchTerm when an option is selected
+                >
+                  <option value="Full Stack Development">
+                    Full Stack Development
                   </option>
-                  <option value="Select course" className="w-[244px] h-[48px]">
-                    Select course
-                  </option>
+                  <option value="Frontend Mastery">Frontend Mastery</option>
+                  <option value="Backend Mastery">Backend Mastery</option>
+                  <option value="">All</option>
                 </select>
               </div>
             </div>
@@ -81,256 +110,71 @@ export default function Jobs() {
                   | Start date{" "}
                 </p>
               </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    01
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    02
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    03
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    04
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    05
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    06
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    07
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    08
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    09
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
-              <div className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]">
-                <div className="flex items-center">
-                  <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
-                    10
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
-                    BFSD053AK{" "}
-                  </p>
-                  <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
-                    FSD{" "}
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
-                    20
-                  </p>
-                  <p className="text-[14px] leading-[16.8px] opacity-70">
-                    | 20/02/2024
-                  </p>
-                </div>
-                <button
-                  onClick={() => setactive("View Progress")}
-                  className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
-                >
-                  View Progress{" "}
-                </button>
-              </div>
+              {searchTerm === ""
+                ? batches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {batch.batchId}{" "}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelect(batch._id)}
+                        className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Progress
+                      </button>
+                    </div>
+                  ))
+                : filteredBatches.map((batch, index) => (
+                    <div
+                      key={batch._id}
+                      className="flex items-center justify-between pl-[11.5px] pr-[39px] h-[59px] border-b-[0.5px] border-[#00000033] min-w-[1109px]"
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[12px] leading-[14.4px] opacity-70 w-[52px] mr-[15px] max-xl:w-[30px]">
+                          {index + 1}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[300px] mr-[50px]">
+                          {batch.batchId}
+                        </p>
+                        <p className="text-[16px] leading-[19.2px] w-[260px] mr-[30px]">
+                          {batch.course === "Full Stack Development"
+                            ? "FSD"
+                            : batch.course}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70 w-[102px] mr-[7px]">
+                          {batch.students}
+                        </p>
+                        <p className="text-[14px] leading-[16.8px] opacity-70">
+                          | {batch.startDate}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelect(batch._id)}
+                        className="w-[126px] py-[5px] bg-black text-white rounded-[6px] text-[16px] leading-[19.2px]"
+                      >
+                        View Progress
+                      </button>
+                    </div>
+                  ))}
             </div>
           </>
         )}
@@ -338,7 +182,7 @@ export default function Jobs() {
           <main>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -358,7 +202,7 @@ export default function Jobs() {
                   </p>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -387,22 +231,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -432,22 +275,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -477,22 +319,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -522,22 +363,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -567,17 +407,16 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -587,7 +426,7 @@ export default function Jobs() {
                   </p>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -617,22 +456,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -662,22 +500,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -707,22 +544,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -752,22 +588,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -797,17 +632,16 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -817,7 +651,7 @@ export default function Jobs() {
                   </p>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -847,22 +681,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -892,22 +725,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -937,22 +769,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -982,22 +813,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1027,17 +857,16 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1047,7 +876,7 @@ export default function Jobs() {
                   </p>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1077,22 +906,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1122,22 +950,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1167,22 +994,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1212,22 +1038,21 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                   <div className="py-[24px] max-smallerphone:gap-[16px] border-b-[1px] flex gap-[24px]">
                     <Image
-                      src="/Frame 18.svg"
+                      src="/images/Frame 18.svg"
                       className="w-[28.64px] h-[28.64px]"
                       width={28.6}
                       height={28.64}
@@ -1257,17 +1082,16 @@ export default function Jobs() {
                         </p>
                       </div>
                       <p className="w-[840px] mt-[6.8px] max-[1100px]:w-full hidden max-md:block ml-[-50px] max-sm:w-[calc(100%+40px)]">
-                          Et mauris rutrum phasellus pellentesque. Nisl pulvinar
-                          adipiscing vitae sed sed sapien neque morbi. Diam
-                          scelerisque et aenean ac nunc cras. Integer gravida
-                          lobortis sollicitudin dui. Dignissim volutpat felis
-                          diam potenti. Mauris amet pharetra nisl nunc commodo
-                          ultrices nisl nullam aliquam. In tempor volutpat
-                          suspendisse massa a feugiat. Cras sed blandit dolor eu
-                          tempus in in. Arcu lacus vulputate turpis interdum sem
-                          maecenas dui feugiat. Amet neque lorem metus ac quis
-                          vel elit.
-                        </p>
+                        Et mauris rutrum phasellus pellentesque. Nisl pulvinar
+                        adipiscing vitae sed sed sapien neque morbi. Diam
+                        scelerisque et aenean ac nunc cras. Integer gravida
+                        lobortis sollicitudin dui. Dignissim volutpat felis diam
+                        potenti. Mauris amet pharetra nisl nunc commodo ultrices
+                        nisl nullam aliquam. In tempor volutpat suspendisse
+                        massa a feugiat. Cras sed blandit dolor eu tempus in in.
+                        Arcu lacus vulputate turpis interdum sem maecenas dui
+                        feugiat. Amet neque lorem metus ac quis vel elit.
+                      </p>
                     </div>
                   </div>
                 </div>

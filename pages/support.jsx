@@ -14,7 +14,7 @@ export default function Support() {
               I have a doubt
             </h1>
             <div className="w-full flex items-center max-[500px]:flex-col pl-[42px] gap-[15.54px] py-[45.27px] max-[500px]:px-[10px] max-[1300px]:pl-[20px] border-[1px] border-[#00000033]">
-              <Image src="/whatsapp.svg" className="max-[500px]:w-[70px]" width={111.46} height={111.46} />
+              <Image src="/images/whatsapp.svg" className="max-[500px]:w-[70px]" width={111.46} height={111.46} />
               <a
                 href={`https://wa.me/${whatsappNumber}`}
                 className="text-[20px] capitalize max-[500px]:text-center max-sm:text-sm leading-[26px] underline capitalize"
@@ -23,7 +23,7 @@ export default function Support() {
               >
                 Clear your doubts on WhatsApp{" "}
                 <Image
-                  src="/open.svg"
+                  src="/images/open.svg"
                   className="inline ml-[9px]"
                   width={27.21}
                   height={27.21}
@@ -36,11 +36,11 @@ export default function Support() {
               I need help with something else
             </h1>
             <div className="w-full flex items-center max-[500px]:flex-col gap-[15.54px] py-[45.27px] pl-[42px] border-[1px] max-[500px]:pl-0 border-[#00000033]">
-              <Image src="/mdi_support.svg" className="max-[500px]:w-[70px]" width={111.46} height={111.46} />
+              <Image src="/images/mdi_support.svg" className="max-[500px]:w-[70px]" width={111.46} height={111.46} />
               <p className="text-[20px] max-[500px]:text-center capitalize max-sm:text-sm leading-[26px] underline capitalize">
                 Contact support
                 <Image
-                  src="/open.svg"
+                  src="/images/open.svg"
                   className="inline ml-[9px]"
                   width={27.21}
                   height={27.21}

@@ -83,7 +83,7 @@ export default function forgotPass() {
         <div className="w-[595px] max-md:w-full max-md:px-[40px] max-sm:px-[20px] max-md:w-full bg-[white] h-[100vh] flex flex-col justify-between pl-[40px] pb-[52.16px] pt-[118.42px] pr-[113px]">
           <div className="flex max-md:w-full w-[502.43px] flex-col gap-[28px]">
             <Image
-              src="back.svg"
+              src="/images/back.svg"
               className="mt-[0.61px]"
               width={44.97}
               height={44.97}
@@ -92,7 +92,7 @@ export default function forgotPass() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -137,7 +137,7 @@ export default function forgotPass() {
         <div className="w-[595px] max-md:w-full max-md:px-[40px] max-sm:px-[20px] max-md:w-full bg-[white] h-[100vh] flex flex-col justify-between pl-[40px] pb-[52.16px] pt-[118.42px] pr-[113px]">
           <div className="flex max-md:w-full w-[502.43px] flex-col gap-[28px]">
             <Image
-              src="back.svg"
+              src="/images/back.svg"
               className="mt-[0.61px]"
               width={44.97}
               height={44.97}
@@ -146,7 +146,7 @@ export default function forgotPass() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -178,7 +178,7 @@ export default function forgotPass() {
               />
               {visiblenewpassword ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/images/eye-open.svg"
                   className="absolute cursor-pointer top-[22.13px] max-md:left-auto max-md:right-[20px] left-[378px]"
                   onClick={() => setvisiblenewpassword(!visiblenewpassword)}
                   width={24}
@@ -186,7 +186,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/images/eye.svg"
                   className="absolute cursor-pointer top-[22.13px] max-md:left-auto max-md:right-[20px] left-[378px]"
                   onClick={() => setvisiblenewpassword(!visiblenewpassword)}
                   width={24}
@@ -215,7 +215,7 @@ export default function forgotPass() {
               />
               {visibleconfirmpassword ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/images/eye-open.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() =>
                     setvisibleconfirmpassword(!visibleconfirmpassword)
@@ -225,7 +225,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/images/eye.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() =>
                     setvisibleconfirmpassword(!visibleconfirmpassword)
@@ -243,7 +243,7 @@ export default function forgotPass() {
               {!samepassword && (
                 <div className="w-[421px] max-md:w-full pl-[11px] rounded-[3px] py-[16.5px] flex items-center gap-[11.65px] bg-[#FAEFE2]">
                   <Image
-                    src="info-icon.svg"
+                    src="/images/info-icon.svg"
                     width={24}
                     height={24}
                   />{" "}
@@ -269,7 +269,7 @@ export default function forgotPass() {
               <div className="radical-circle"></div>
             </div>
             <Image
-              src="logo.svg"
+              src="/images/logo.svg"
               className="absolute top-[43.13px]"
               width={127.79}
               height={24}
@@ -310,7 +310,7 @@ export default function forgotPass() {
               />
               {visible ? (
                 <Image
-                  src="eye-open.svg"
+                  src="/images/eye-open.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() => setvisible(!visible)}
                   width={24}
@@ -318,7 +318,7 @@ export default function forgotPass() {
                 />
               ) : (
                 <Image
-                  src="eye.svg"
+                  src="/images/eye.svg"
                   className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                   onClick={() => setvisible(!visible)}
                   width={24}
@@ -375,19 +375,19 @@ export default function forgotPass() {
       )}
       <div className="h-[100vh] w-full max-md:hidden relative overflow-hidden">
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}

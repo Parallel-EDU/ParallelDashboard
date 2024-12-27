@@ -1,6 +1,3 @@
-"use client";
-
-
 import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
@@ -8,13 +5,8 @@ import axios from "axios";
 import { toast } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 
-
-
-
 export default function Signup() {
   const router = useRouter();
-  
-
   const [visible, setVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [emailEntered, setEmailEntered] = useState(false);
@@ -33,11 +25,11 @@ export default function Signup() {
   
       if (response.data.success) {
         console.log("registration successful");
-        router.push('/login');
+        router.push('/onboarding');
       } else {
         if (response.data.error === 'User already exists') {
           console.log("User already exists");
-          setUserExists(true); // Update state if user exists
+          setUserExists(true);
           toast.error("User already exists");
         } else if (response.data.error === 'Invalid email address') {
           console.log("Invalid email address");
@@ -74,7 +66,7 @@ export default function Signup() {
             <div className="radical-circle"></div>
           </div>
           <Image
-            src="logo.svg"
+            src="/images/logo.svg"
             className="absolute top-[43.13px]"
             width={127.79}
             height={24}
@@ -117,7 +109,7 @@ export default function Signup() {
             />
             {visible ? (
               <Image
-                src="eye-open.svg"
+                src="/images/eye-open.svg"
                 className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                 onClick={() => setVisible(!visible)}
                 width={24}
@@ -125,7 +117,7 @@ export default function Signup() {
               />
             ) : (
               <Image
-                src="eye.svg"
+                src="/images/eye.svg"
                 className="absolute cursor-pointer max-md:left-auto max-md:right-[20px] top-[118.13px] left-[378px]"
                 onClick={() => setVisible(!visible)}
                 width={24}
@@ -205,19 +197,19 @@ export default function Signup() {
       </div>
       <div className="h-[100vh] max-md:hidden w-full relative overflow-hidden">
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}
         />
         <Image
-          src="/bg-eclips.svg"
+          src="/images/bg-eclips.svg"
           className="w-full object-cover mixblend h-auto"
           width={1024}
           height={700}

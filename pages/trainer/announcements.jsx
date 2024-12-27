@@ -1,42 +1,128 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import style from "../../styles/style.module.css";
 import TrainerNavbar from "../../components/trainerbar";
+import axios from "axios";
 
 export default function Jobs() {
   const [active, setactive] = useState("announcements");
-  const [addmodule, setaddmodule] = useState(false);
-  const [addassessment, setaddassessment] = useState(false);
-  const [viewprofile, setviewprofile] = useState(false);
   const [count, setcount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [sessionTime, setsessionTime] = useState(false);
-  const [item, setItem] = useState("Select session type");
-  const [inputValue, setInputValue] = useState("");
-  const [SessionTimeValue, setSessionTimeValue] = useState("PM");
-  const characterCount = inputValue.length;
+  const [clicked, setclicked] = useState(false);
+  const [sessionCount, setsessionCount] = useState(0);
+  const [time, setTime] = useState("");
+  const [period, setPeriod] = useState("PM");
+  const [timeend, setTimeend] = useState("");
+  const [periodend, setPeriodend] = useState("PM");
+  const [sessionclicked, setsessionclicked] = useState(false);
+  const [doubtClearing, setdoubtClearing] = useState({
+    type: "Doubt Clearing Session",
+    heading: "",
+    course: "",
+    topic: "",
+    startTime: "",
+    endTime: "",
+    message: "",
+    link: "",
+    batchId: "",
+  });
+  const [general, setgeneral] = useState({
+    type: "General Announcement",
+    heading: "",
+    course: "",
+    topic: "",
+    startTime: "",
+    endTime: "",
+    message: "",
+    link: "",
+    batchId: "",
+  });
+  const handleChangeGeneral = (event) => {
+    setgeneral({ ...general, [event.target.name]: event.target.value });
+  };
+  const handleChangedoubtClearing = (event) => {
+    setdoubtClearing({
+      ...doubtClearing,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const handleSubmit = async () => {
+    setclicked(true);
+    try {
+      const response = await axios.post("/api/announcements/", general);
+      setactive("announcements");
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    console.log(general);
+  };
+  const handleSubmit2 = async () => {
+    try {
+      const response = await axios.post("/api/announcements/", doubtClearing);
+      setactive("announcements");
+    } catch (error) {
+      console.log("Incorrect password", error.message);
+    }
+    setsessionclicked(true);
+    console.log(doubtClearing);
+  };
+  const handleTimeChange = (e) => {
+    setTime(e.target.value);
+    setdoubtClearing({
+      ...doubtClearing,
+      startTime: `${e.target.value} ${period}`,
+    });
+  };
 
-  const handleSelect = (value) => {
-    setItem(value);
-    setIsOpen(false);
+  const handlePeriodChange = (e) => {
+    setPeriod(e.target.value);
+    setdoubtClearing({
+      ...doubtClearing,
+      startTime: `${time} ${e.target.value}`,
+    });
   };
-  const handleTimeSelect = (value) => {
-    setSessionTimeValue(value);
-    setsessionTime(false);
+  const handleTimeChangeEnd = (e) => {
+    setTimeend(e.target.value);
+    setdoubtClearing({
+      ...doubtClearing,
+      endTime: `${e.target.value} ${periodend}`,
+    });
   };
-  const handleChangeText = (e) => {
-    setInputValue(e.target.value);
+
+  const handlePeriodChangeEnd = (e) => {
+    setPeriod(e.target.value);
+    setdoubtClearing({
+      ...doubtClearing,
+      endTime: `${timeend} ${e.target.value}`,
+    });
   };
+
   const handleChangeTextArea = (e) => {
     setcount(e.target.value.length);
+    setgeneral({ ...general, [event.target.name]: event.target.value });
   };
+  const handleChangeTextAreaSession = (e) => {
+    setsessionCount(e.target.value.length);
+    setdoubtClearing({
+      ...doubtClearing,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const [batches, setBatches] = useState([]);
+
+  useEffect(() => {
+    async function fetchBatches() {
+      const res = await axios.get(`/api/batch/`);
+      setBatches(res.data);
+      console.log(res.data);
+    }
+    fetchBatches();
+  }, []);
   return (
     <>
       <TrainerNavbar />
-      
       <main className="relative px-[59.5px] pb-[78px] pt-[0] max-md:px-[40px] max-sm:px-[20px]">
-                {active === "announcements" && (
+        {active === "announcements" && (
           <>
             <div className="h-[611px] pb-[36.88px] max-sm:px-[20px] w-full bg-white rounded-[8px] pt-[37.12px] px-[31px] pr-[36px]">
               <h1 className="text-[20px] leading-[26px] font-semibold">
@@ -67,7 +153,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -90,7 +176,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    required
+                    name="heading"
+                    onChange={handleChangeGeneral}
                     placeholder="Enter heading"
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
@@ -103,12 +191,13 @@ export default function Jobs() {
                       placeholder="Enter message"
                       onChange={handleChangeTextArea}
                       maxLength={250}
+                      required
                       className="w-[639px] max-hamburger:w-[100%] h-[138px] rounded-[4px] resize-none border-[0.5px] py-[11.5px] px-[12.74px] border-[#00000080]"
-                      name=""
+                      name="message"
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count} / 250px
+                      {count} / 250
                     </p>
                   </div>
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">
@@ -116,7 +205,8 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="link"
+                    onChange={handleChangeGeneral}
                     id=""
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
@@ -125,7 +215,13 @@ export default function Jobs() {
                   </p>
                   <div className="flex gap-[20px] max-sm:w-full max-sm:flex-wrap w-[494px]">
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeGeneral}
+                        value="Full Stack Development"
+                        name="course"
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] leading-[16.8px]"
@@ -134,7 +230,13 @@ export default function Jobs() {
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeGeneral}
+                        value="Backend Mastery"
+                        name="course"
+                        id="course"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] leading-[16.8px]"
@@ -143,7 +245,13 @@ export default function Jobs() {
                       </label>
                     </div>
                     <div className="flex items-center gap-[6.5px]">
-                      <input type="radio" name="course" id="course" />
+                      <input
+                        type="radio"
+                        onChange={handleChangeGeneral}
+                        name="course"
+                        id="course"
+                        value="Frontend Mastery"
+                      />
                       <label
                         htmlFor="course"
                         className="text-[14px] h-[20px] leading-[16.8px]"
@@ -158,14 +266,24 @@ export default function Jobs() {
                   <div className="w-[407px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
                       type="text"
-                      name=""
+                      name="batchId"
+                      onChange={handleChangeGeneral}
                       id=""
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[45px] bg-[white]"
                     >
-                      <option value="">Batch Code</option>
+                      <option value="">Select Batch</option>
+                      {batches.map((batch, index) => (
+                        <option key={batch._id} value={batch.batchId}>
+                          {batch.batchId}
+                        </option>
+                      ))}{" "}
                     </select>
                   </div>
-                  <button className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] mt-[36px] py-[10px]">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={clicked}
+                    className="text-[14px] max-sm:w-[100%] leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] mt-[36px] py-[10px]"
+                  >
                     Send Announcement
                   </button>
                 </div>
@@ -177,7 +295,7 @@ export default function Jobs() {
           <>
             <div className="mb-[21.5px] flex items-center mt-[12px]">
               <Image
-                src="/drop.svg"
+                src="/images/drop.svg"
                 className="cursor-pointer rotate-90"
                 width={17}
                 height={9.08}
@@ -202,10 +320,12 @@ export default function Jobs() {
                       </p>
                       <input
                         type="text"
-                        name=""
+                        name="heading"
+                        onChange={handleChangedoubtClearing}
                         placeholder="Enter heading"
                         id=""
                         className="w-[254px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
+                        required
                       />
                     </div>
                     <div className="max-sm:w-full">
@@ -215,11 +335,15 @@ export default function Jobs() {
                       <div className="w-[367px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                         <select
                           type="text"
-                          name=""
+                          onChange={handleChangedoubtClearing}
+                          name="course"
                           id=""
                           className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                         >
-                          <option value="">Full stack development</option>
+                          <option value="">Select Course</option>
+                          <option value="Full stack development">
+                            Full stack development
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -229,9 +353,11 @@ export default function Jobs() {
                       </p>
                       <input
                         type="text"
-                        name=""
+                        name="topic"
+                        required
                         placeholder="Enter topic"
                         id=""
+                        onChange={handleChangedoubtClearing}
                         className="w-[254px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                       />
                     </div>
@@ -246,19 +372,21 @@ export default function Jobs() {
                           <input
                             type="time"
                             className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
-                            name=""
+                            name="startTime"
                             id=""
+                            onChange={handleTimeChange}
                           />
                         </div>
                         <div className="w-[75px] max-hamburger:w-[100%] pr-[11.6px] pl-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                           <select
-                            type="text"
                             name=""
                             id=""
                             className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
+                            onChange={handlePeriodChange}
+                            value={period}
                           >
-                            <option value="">PM</option>
-                            <option value="">AM</option>
+                            <option value="PM">PM</option>
+                            <option value="AM">AM</option>
                           </select>
                         </div>
                       </div>
@@ -273,6 +401,7 @@ export default function Jobs() {
                             type="time"
                             className="w-[140px] h-[45px] relative left-[calc(50%-15px)]"
                             name=""
+                            onChange={handleTimeChangeEnd}
                             id=""
                           />
                         </div>
@@ -281,10 +410,11 @@ export default function Jobs() {
                             type="text"
                             name=""
                             id=""
+                            onChange={handlePeriodChangeEnd}
                             className="w-full max-hamburger:w-[100%] rounded-[4px] h-[44px] bg-[white]"
                           >
-                            <option value="">PM</option>
-                            <option value="">AM</option>
+                            <option value="PM">PM</option>
+                            <option value="AM">AM</option>
                           </select>
                         </div>
                       </div>
@@ -296,14 +426,14 @@ export default function Jobs() {
                   <div className="relative max-hamburger:w-[100%] w-[639px]">
                     <textarea
                       placeholder="Enter message"
-                      onChange={handleChangeTextArea}
+                      onChange={handleChangeTextAreaSession}
                       maxLength={250}
                       className="w-[639px] max-hamburger:w-[100%] h-[138px] rounded-[4px] resize-none border-[0.5px] py-[11.5px] px-[12.74px] border-[#00000080]"
-                      name=""
+                      name="message"
                       id=""
                     ></textarea>
                     <p className="text-[12px] text-[#2C2E32] absolute bottom-[18px] right-[18px]">
-                      {count} / 250px
+                      {sessionCount} / 250
                     </p>
                   </div>
                   <p className="text-[14px] leading-[18.2px] mb-[10px]">
@@ -311,8 +441,9 @@ export default function Jobs() {
                   </p>
                   <input
                     type="text"
-                    name=""
+                    name="link"
                     id=""
+                    onChange={handleChangedoubtClearing}
                     className="w-[407px] max-hamburger:w-[100%] pl-[15.71px] rounded-[4px] h-[45px] bg-[white] border-[0.5px] border-[#00000080]"
                   />
 
@@ -321,15 +452,23 @@ export default function Jobs() {
                   </p>
                   <div className="w-[407px] max-hamburger:w-[100%] px-[15.71px] rounded-[4px] bg-[white] border-[0.5px] border-[#00000080]">
                     <select
-                      type="text"
-                      name=""
-                      id=""
+                      name="batchId"
+                      onChange={handleChangedoubtClearing}
                       className="w-full max-hamburger:w-[100%] rounded-[4px] h-[45px] bg-[white]"
                     >
-                      <option value="">Batch Code</option>
+                      <option value="">Select Batch</option>
+                      {batches.map((batch, index) => (
+                        <option key={batch._id} value={batch.batchId}>
+                          {batch.batchId}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                  <button className="text-[14px] max-sm:w-full leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] mt-[36px] py-[10px]">
+                  <button
+                    onClick={handleSubmit2}
+                    disabled={sessionclicked}
+                    className="text-[14px] max-sm:w-full leading-[16.8px] text-white bg-black px-[15px] rounded-[4px] mt-[36px] py-[10px]"
+                  >
                     Send Announcement
                   </button>
                 </div>

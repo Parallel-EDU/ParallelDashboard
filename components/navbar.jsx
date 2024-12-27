@@ -3,6 +3,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 export default function Navbar() {
   const [openHamburger, setOpenHamburger] = useState(false);
@@ -19,6 +20,7 @@ export default function Navbar() {
   const router = useRouter();
   const Cross = useRef(null);
   const Background = useRef(null);
+
   const handleHamburger = () => {
     setOpenHamburger(true);
     console.log(openHamburger);
@@ -40,6 +42,37 @@ export default function Navbar() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const [userData, setUserData] = useState(null);
+  const [tokenId, settokenId] = useState(null);
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        const response = await axios.get(`/api/cookies`);
+        settokenId(response.data.id);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchTokenData();
+  }, []);
+  useEffect(() => {
+    if (!tokenId) {
+      console.error("TokenId is not defined");
+      return;
+    }
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`/api/onboarding/personalInfo/route`);
+        const data = response.data;
+        const results = data.filter((student) => student.SID === tokenId);
+        setUserData(results);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+  }, [tokenId]);
 
   useEffect(() => {
     if (width <= 980) {
@@ -98,9 +131,9 @@ export default function Navbar() {
     <>
       <nav className="px-[60px] sticky top-0 z-[9999999999] relative max-md:px-[40px] max-sm:px-[20px] flex justify-between pt-[40px] pb-[20px] bg-white shadow-nav">
         <div className="flex">
-          <Image src="/Frame 96.svg" width={120.92} height={22} />
+          <Image src="/images/Frame 96.svg" width={120.92} height={22} />
           <p className="text-base text-black opacity-60 ml-[36px] max-sm:hidden">
-            FSD05202432
+            {userData ? userData[0].SID.slice(0, 8) : ""}
           </p>
         </div>
         <div className="gap-[36px] max-smallerphone:gap-[10px] items-center hidden max-hamburger:flex">
@@ -108,7 +141,7 @@ export default function Navbar() {
             className={openHamburger ? "hidden" : ""}
             href={"/notifications"}
           >
-            <Image src="/c.svg" width={24} height={24} />
+            <Image src="/images/c.svg" width={24} height={24} />
           </Link>
           <div
             ref={Hamburger}
@@ -122,7 +155,7 @@ export default function Navbar() {
           className="w-[36px] absolute max-hamburger:right-[60px] max-md:right-[40px] max-sm:right-[12px] top-[33px] z-50 hidden curser-pointer"
         >
           {" "}
-          <Image src="/close.svg" width={36} height={36} />
+          <Image src="/images/close.svg" width={36} height={36} />
         </div>
         <div
           ref={Background}
@@ -180,11 +213,11 @@ export default function Navbar() {
               className="max-hamburger:hidden"
               href={"/notifications"}
             >
-              <Image src="/c.svg" width={24} height={24} />
+              <Image src="/images/c.svg" width={24} height={24} />
             </Link>
             <div ref={Menuitems6} className="flex gap-[8px]">
               <Image
-                src="/codicon_account.svg"
+                src="/images/codicon_account.svg"
                 className="max-hamburger:w-[27px]"
                 width={24}
                 height={24}

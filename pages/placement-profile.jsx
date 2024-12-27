@@ -1,7 +1,8 @@
+import axios from "axios";
 import Navbar from "../components/navbar";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Profile() {
   const [Name, setName] = useState("");
@@ -36,6 +37,41 @@ export default function Profile() {
     setSelectedPassingYear(passingyear);
     setIsPassingOpen(false);
   };
+  const [userData, setUserData] = useState(null);
+
+  const [tokenId, settokenId] = useState(null);
+  useEffect(() => {
+    const fetchTokenData = async () => {
+      try {
+        const response = await axios.get(`/api/cookies`);
+        settokenId(response.data.id);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchTokenData();
+  }, []);
+
+  useEffect(() => {
+    if (!tokenId) {
+      console.error("TokenId is not defined");
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`/api/onboarding/personalInfo/route`);
+        const data = response.data;
+        const results = data.filter((student) => student.SID === tokenId);
+        setUserData(results[0]);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [tokenId]);
+
   return (
     <>
       <Navbar />
@@ -53,9 +89,10 @@ export default function Profile() {
             <div className="flex gap-[18px] max-sm:flex-col max-sm:gap-[17px] mb-[17px]">
               <div className="w-[210px] max-smallerphone:w-full h-[252px] max-md:px-[12px] max-md:justify-center max-md:items-center max-md:py-[17px] max-md:h-auto pl-[34px] flex flex-col justify-center rounded-[14px] border-[1px] border-[#D8D8D8]">
                 <div className="w-[101.81px] ml-[19.59px] max-md:ml-[0px] h-[101.81px] rounded-[100%] bg-[#ECECEC]"></div>
-                <button className="w-[141px] text-[14px] h-[31px] max-sm:w-full mt-[23px] bg-black text-white rounded-[6px] leading-[16.8px]">
+                <input type="file" className="hidden" name="upload-photo" id="upload-photo" />
+                <label htmlFor="upload-photo" className="w-[141px] flex items-center justify-center cursor-pointer text-[14px] h-[31px] max-sm:w-full mt-[23px] bg-black text-white rounded-[6px] leading-[16.8px]">
                   Upload Picture{" "}
-                </button>
+                </label>
               </div>
               <div className="w-[588px] max-sm:w-full max-md:py-[17px] max-md:h-auto max-hamburger:px-[18px] max-hamburger:w-[calc(100%-210px)] h-[252px] relative pl-[28px] pt-[17.08px] rounded-[14px] border-[1px] border-[#D8D8D8]">
                 <p className="absolute right-[16.4px] italic text-[12px] leading-[14.4px] text-[#606060]">
@@ -70,10 +107,10 @@ export default function Profile() {
                     type="text"
                     name=""
                     id=""
-                    value={"Candidate name"}
+                    value={userData ? userData.name : ''}
                     disabled
                     className="w-[250px] text-[14px] leading-[16.8px] max-md:w-[100%] bg-[#ECECEC] pl-[15.71px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
-                  />
+                    />
                 </div>
                 <div className="max-hamburger:w-[100%] max-md:flex-col flex gap-[16px] mt-[22px]">
                   <div>
@@ -84,10 +121,10 @@ export default function Profile() {
                       type="text"
                       name=""
                       id=""
-                      value={"candidate@gmail.com"}
+                      value={userData ? userData.email : ''}
                       disabled
                       className="w-[250px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] bg-[#ECECEC] pl-[15.71px] max-hamburger:pl-[6.51px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
-                    />
+                      />
                   </div>
                   <div>
                     <p className="text-[14px] leading-[16.8px] mb-[8px]">
@@ -97,7 +134,7 @@ export default function Profile() {
                       type="text"
                       name=""
                       id=""
-                      value={"+91 97307 3287"}
+                      value={userData ? userData.phoneNumber : ''}
                       disabled
                       className="w-[250px] text-[14px] leading-[16.8px] max-hamburger:w-[100%] max-hamburger:pl-[6.51px] bg-[#ECECEC] pl-[15.71px] rounded-[6px] h-[45px] text-[#606060] border-[1px] border-[#0000004D]"
                     />
@@ -134,7 +171,7 @@ export default function Profile() {
                           {selectedYear || ""}
                         </div>
                         <Image
-                          src="/drop.svg"
+                          src="/images/drop.svg"
                           className={
                             isOpen
                               ? "h-[6.93px] rotate-180 w-[12.88px] opacity-70 cursor-pointer"
@@ -333,7 +370,7 @@ export default function Profile() {
                             {selectedYear || "Start Year"}
                           </div>
                           <Image
-                            src="/drop.svg"
+                            src="/images/drop.svg"
                             className={
                               isOpen
                                 ? "h-[6.93px] rotate-180 w-[12.88px] opacity-70 cursor-pointer"
@@ -372,7 +409,7 @@ export default function Profile() {
                             {selectedYear || "End Year"}
                           </div>
                           <Image
-                            src="/drop.svg"
+                            src="/images/drop.svg"
                             className={
                               isOpen
                                 ? "h-[6.93px] rotate-180 w-[12.88px] opacity-70 cursor-pointer"
